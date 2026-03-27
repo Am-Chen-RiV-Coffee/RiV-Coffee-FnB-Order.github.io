@@ -179,6 +179,7 @@ textarea{resize:vertical;min-height:56px;}
 
 .toast{position:fixed;top:15px;left:50%;transform:translateX(-50%);background:var(--brown);color:var(--gold-light);padding:8px 18px;border-radius:7px;font-size:0.8rem;z-index:1000;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;}
 .toast.show{opacity:1;}
+#uploadArea:hover{border-color:var(--gold);background:#fdf3e0;}
 </style>
 </head>
 <body>
@@ -329,31 +330,52 @@ textarea{resize:vertical;min-height:56px;}
   </div>
 
   <!-- POST PAYMENT STEPS -->
-  <div class="post-pay-box">
-    <div class="post-pay-title">📲 Sau khi chuyển khoản, bạn cần làm gì?</div>
-    <div class="post-pay-steps">
-      <div class="post-pay-step">
-        <div class="post-icon">1</div>
-        <div class="post-text">Nhấn <strong>"Xác nhận đặt hàng"</strong> bên dưới để tạo đơn</div>
+  <!-- STEP: Confirm transferred -->
+  <div class="post-pay-box" id="confirmCkBox">
+    <div class="post-pay-title">💸 Bạn đã chuyển khoản chưa?</div>
+    <div style="font-size:0.81rem;color:#666;margin-bottom:12px;line-height:1.6;">
+      Sau khi chuyển khoản đúng số tiền &amp; đúng nội dung, nhấn nút bên dưới để tiếp tục gửi ảnh xác nhận.
+    </div>
+    <button class="btn-next" style="width:100%" onclick="showUploadProof()">💳 Đã chuyển khoản xong →</button>
+  </div>
+
+  <!-- STEP: Upload proof (hidden until clicked) -->
+  <div class="post-pay-box" id="uploadProofBox" style="display:none;border-left-color:#25a244;">
+    <div class="post-pay-title">📸 Gửi ảnh biên lai chuyển khoản</div>
+    <div style="font-size:0.81rem;color:#444;margin-bottom:10px;line-height:1.65;">
+      Quán cần đối chiếu ảnh biên lai với <strong>mã đơn hàng</strong> và <strong>số tiền</strong> trước khi xác nhận.<br>
+      Vui lòng chụp màn hình biên lai <strong>hiển thị rõ mã nội dung CK</strong>.
+    </div>
+
+    <!-- Upload area -->
+    <div id="uploadArea" onclick="document.getElementById('proofFileInput').click()"
+      style="border:2px dashed var(--sand);border-radius:10px;padding:22px 14px;text-align:center;cursor:pointer;background:var(--sand2);transition:border 0.2s;margin-bottom:10px;">
+      <div style="font-size:2rem;margin-bottom:6px;">📷</div>
+      <div style="font-size:0.83rem;font-weight:600;color:var(--coffee);">Nhấn để chọn ảnh biên lai</div>
+      <div style="font-size:0.72rem;color:#aaa;margin-top:3px;">JPG, PNG, HEIC – tối đa 10MB</div>
+    </div>
+    <input type="file" id="proofFileInput" accept="image/*" style="display:none" onchange="handleProofUpload(event)">
+
+    <!-- Preview -->
+    <div id="proofPreviewWrap" style="display:none;margin-bottom:10px;">
+      <div style="font-size:0.75rem;color:var(--green);font-weight:600;margin-bottom:6px;">✅ Đã chọn ảnh:</div>
+      <div style="position:relative;display:inline-block;width:100%;">
+        <img id="proofPreview" src="" alt="Biên lai" style="width:100%;max-height:220px;object-fit:contain;border-radius:8px;border:1.5px solid var(--sand);">
+        <button onclick="removeProof()" style="position:absolute;top:6px;right:6px;background:rgba(192,57,43,0.85);color:#fff;border:none;border-radius:50%;width:26px;height:26px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;line-height:1;">×</button>
       </div>
-      <div class="post-pay-step">
-        <div class="post-icon">2</div>
-        <div class="post-text">Nhấn <strong>"Gửi đơn qua Messenger"</strong> để gửi đơn cho quán — kèm ảnh chụp màn hình biên lai CK càng tốt</div>
-      </div>
-      <div class="post-pay-step">
-        <div class="post-icon">3</div>
-        <div class="post-text">Chờ quán <strong>phản hồi xác nhận</strong> qua Messenger / Zalo / WhatsApp trong vài phút</div>
-      </div>
-      <div class="post-pay-step">
-        <div class="post-icon">4</div>
-        <div class="post-text">Nếu sau <strong>15 phút chưa có phản hồi</strong> — nhắn lại hoặc gọi <a href="tel:0356155524" style="color:var(--coffee);font-weight:700;">0356155524</a></div>
-      </div>
+      <div id="proofFileName" style="font-size:0.72rem;color:#999;margin-top:4px;"></div>
+    </div>
+
+    <div id="proofErr" style="color:var(--red);font-size:0.75rem;margin-bottom:7px;display:none;">⚠️ Vui lòng chọn ảnh biên lai trước khi xác nhận.</div>
+
+    <div style="font-size:0.75rem;color:#888;background:#fff8e1;border-radius:7px;padding:8px 10px;margin-bottom:10px;line-height:1.55;border:1px solid #ffe082;">
+      📌 Quán sẽ đối chiếu: <strong>mã đơn hàng</strong> + <strong>số tiền</strong> + <strong>STK thụ hưởng</strong> trong ảnh. Nếu không khớp, đơn sẽ bị huỷ và hoàn tiền.
     </div>
   </div>
 
   <div class="btn-row">
     <button class="btn-back" onclick="goPage('page-address',2)">← Quay lại</button>
-    <button class="btn-next" style="flex:1" onclick="confirmOrder()">✅ Xác nhận đặt hàng</button>
+    <button class="btn-next" style="flex:1;opacity:0.4;cursor:not-allowed;" id="btnConfirmOrder" disabled onclick="tryConfirmOrder()">✅ Xác nhận đặt hàng</button>
   </div>
 </div>
 
@@ -372,6 +394,21 @@ textarea{resize:vertical;min-height:56px;}
     <div id="receiptInfo"></div>
     <hr class="receipt-divider">
     <div id="receiptPayment"></div>
+    <!-- Proof image shown in receipt -->
+    <div id="receiptProofWrap" style="display:none;margin-top:10px;">
+      <hr class="receipt-divider">
+      <div style="font-size:0.75rem;font-weight:600;color:var(--coffee);margin-bottom:6px;">📸 Biên lai chuyển khoản đã gửi:</div>
+      <img id="receiptProofImg" src="" alt="Biên lai" style="width:100%;max-height:200px;object-fit:contain;border-radius:8px;border:1.5px solid var(--sand);">
+    </div>
+  </div>
+
+  <!-- Status note -->
+  <div style="background:#e8f5e9;border-radius:10px;padding:12px 14px;margin-bottom:12px;border:1.5px solid #b2dfbc;">
+    <div style="font-size:0.85rem;font-weight:700;color:#2e7d32;margin-bottom:4px;">⏳ Đang chờ quán xác nhận</div>
+    <div style="font-size:0.78rem;color:#444;line-height:1.6;">
+      Quán sẽ đối chiếu <strong>ảnh biên lai</strong> với mã đơn &amp; số tiền, sau đó phản hồi qua Messenger / Zalo / WhatsApp trong vài phút.<br>
+      <span style="color:#888;">Sau 15 phút chưa có phản hồi → gọi <a href="tel:0356155524" style="color:var(--coffee);font-weight:700;">0356155524</a></span>
+    </div>
   </div>
   <a class="btn-messenger" id="messengerBtn" href="#" target="_blank" rel="noopener noreferrer">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.145 2 11.243c0 2.908 1.438 5.504 3.688 7.2V22l3.37-1.85C9.989 20.37 10.98 20.5 12 20.5c5.523 0 10-4.145 10-9.257S17.523 2 12 2zm1.02 12.47l-2.55-2.72-4.98 2.72 5.48-5.82 2.61 2.72 4.92-2.72-5.48 5.82z"/></svg>
@@ -1265,6 +1302,13 @@ function confirmOrder(){
   document.getElementById('receiptPayment').innerHTML=`
     <div class="receipt-row"><span>💳</span><span>MB Bank – Chuyển khoản</span></div>
     <div style="font-size:0.72rem;color:#888;margin-top:3px">STK: 0357405770 – TRAN PHOI NGOC<br>Nội dung: ${orderInfo.nd}</div>`;
+  // Show proof image in receipt
+  if(proofImageData){
+    document.getElementById('receiptProofImg').src = proofImageData;
+    document.getElementById('receiptProofWrap').style.display='block';
+  } else {
+    document.getElementById('receiptProofWrap').style.display='none';
+  }
   const msg = encodeURIComponent(buildMsg(items,ts));
   document.getElementById('messengerBtn').href='https://m.me/riv.coffee.fnb?text='+msg;
   document.getElementById('whatsappBtn').href='https://wa.me/84356155524?text='+msg;
@@ -1317,6 +1361,84 @@ function showToast(m){
   t.textContent=m;t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),2500);
 }
+
+// ── UPLOAD PROOF FLOW ────────────────────────────────────
+let proofImageData = null;
+
+function showUploadProof(){
+  document.getElementById('confirmCkBox').style.display='none';
+  document.getElementById('uploadProofBox').style.display='block';
+  document.getElementById('uploadProofBox').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function handleProofUpload(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  if(file.size > 10*1024*1024){
+    showToast('⚠️ Ảnh quá lớn, vui lòng chọn ảnh dưới 10MB');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(e){
+    proofImageData = e.target.result;
+    document.getElementById('proofPreview').src = proofImageData;
+    document.getElementById('proofPreviewWrap').style.display='block';
+    document.getElementById('proofFileName').textContent = file.name + ' (' + (file.size/1024).toFixed(1) + ' KB)';
+    document.getElementById('uploadArea').style.display='none';
+    document.getElementById('proofErr').style.display='none';
+    const btn = document.getElementById('btnConfirmOrder');
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.style.cursor = 'pointer';
+    btn.setAttribute('onclick','confirmOrder()');
+    showToast('✅ Đã chọn ảnh biên lai!');
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeProof(){
+  proofImageData = null;
+  document.getElementById('proofPreview').src='';
+  document.getElementById('proofPreviewWrap').style.display='none';
+  document.getElementById('proofFileName').textContent='';
+  document.getElementById('uploadArea').style.display='block';
+  document.getElementById('proofFileInput').value='';
+  const btn = document.getElementById('btnConfirmOrder');
+  btn.disabled = true;
+  btn.style.opacity = '0.4';
+  btn.style.cursor = 'not-allowed';
+  btn.setAttribute('onclick','tryConfirmOrder()');
+}
+
+function tryConfirmOrder(){
+  document.getElementById('proofErr').style.display='block';
+  document.getElementById('uploadProofBox').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// Reset proof UI when user re-enters payment page
+const _origGoPage = goPage;
+goPage = function(id, step){
+  if(id === 'page-payment'){
+    proofImageData = null;
+    setTimeout(()=>{
+      const box1 = document.getElementById('confirmCkBox');
+      const box2 = document.getElementById('uploadProofBox');
+      if(box1) box1.style.display='block';
+      if(box2) box2.style.display='none';
+      const pre = document.getElementById('proofPreviewWrap');
+      if(pre) pre.style.display='none';
+      const ua = document.getElementById('uploadArea');
+      if(ua) ua.style.display='block';
+      const fi = document.getElementById('proofFileInput');
+      if(fi) fi.value='';
+      const err = document.getElementById('proofErr');
+      if(err) err.style.display='none';
+      const btn = document.getElementById('btnConfirmOrder');
+      if(btn){ btn.disabled=true; btn.style.opacity='0.4'; btn.style.cursor='not-allowed'; btn.setAttribute('onclick','tryConfirmOrder()'); }
+    }, 50);
+  }
+  _origGoPage(id, step);
+};
 
 buildMenu();
 </script>
