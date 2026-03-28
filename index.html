@@ -181,6 +181,8 @@ textarea{resize:vertical;min-height:56px;}
 .toast.show{opacity:1;}
 #uploadArea:hover{border-color:var(--gold);background:#fdf3e0;}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>emailjs.init('4eUjrRg5rx-XoTRgl');</script>
 </head>
 <body>
 
@@ -1313,6 +1315,33 @@ function confirmOrder(){
   document.getElementById('messengerBtn').href='https://m.me/riv.coffee.fnb?text='+msg;
   document.getElementById('whatsappBtn').href='https://wa.me/84356155524?text='+msg;
   document.getElementById('zaloBtn').href='https://zalo.me/0356155524';
+
+  // ── GỬI EMAIL THÔNG BÁO ĐƠN HÀNG ──────────────────────
+  let itemsText = '';
+  items.forEach(i=>{
+    const opts=[];
+    if(i.hasOpts){if(i.sugar)opts.push(i.sugar+' đường');if(i.ice)opts.push(i.ice+' đá');}
+    itemsText += `• ${i.qty}x ${i.name}${opts.length?' ('+opts.join(', ')+')':''} — ${fmt(i.qty*i.price)}\n`;
+    if(i.note) itemsText += `   📝 ${i.note}\n`;
+  });
+  const ss2 = orderInfo.fee===0 ? 'Miễn phí' : fmt(orderInfo.fee);
+  const emailParams = {
+    order_ref:      orderInfo.ref,
+    order_time:     now.toLocaleString('vi-VN'),
+    customer_name:  orderInfo.name,
+    customer_phone: orderInfo.phone,
+    customer_addr:  orderInfo.addr,
+    customer_note:  orderInfo.note || '(không có)',
+    order_items:    itemsText,
+    subtotal:       fmt(orderInfo.sub),
+    ship_fee:       ss2,
+    total:          fmt(orderInfo.total),
+    order_nd:       orderInfo.nd,
+  };
+  emailjs.send('rivcoffeefnb', 'template_p5xrw5q', emailParams)
+    .then(()=>{ showToast('📧 Đã gửi thông báo đơn hàng!'); })
+    .catch((err)=>{ console.error('EmailJS lỗi:', err); });
+
   goPage('page-receipt',4);
 }
 
