@@ -240,6 +240,7 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
     <p>Bạn có thể xem menu và lên kế hoạch đặt hàng, nhưng chưa thể đặt lúc này.</p>
     <div class="open-time" id="closedOpenTime"></div>
     <div style="font-size:0.77rem;color:#aaa;margin-top:10px;">Liên hệ: <a href="tel:0356155524" style="color:var(--coffee)">0356155524</a></div>
+    <div style="font-size:0.7rem;color:#ccc;margin-top:16px;">Chủ quán: tap vào đây 5 lần để mở Admin</div>
   </div>
 </div>
 <div class="page active" id="page-menu">
@@ -1809,17 +1810,22 @@ buildMenu = function(){
 
 // Add secret admin trigger: tap header logo 5 times quickly
 let adminTaps = 0, adminTimer = null;
+function handleAdminTap(){
+  adminTaps++;
+  clearTimeout(adminTimer);
+  adminTimer = setTimeout(()=>{ adminTaps=0; }, 2000);
+  if(adminTaps >= 5){ adminTaps=0; tryOpenAdmin(); }
+}
 document.addEventListener('DOMContentLoaded', ()=>{
   const logo = document.querySelector('.header img');
   if(logo){
-    logo.addEventListener('click', ()=>{
-      adminTaps++;
-      clearTimeout(adminTimer);
-      adminTimer = setTimeout(()=>{ adminTaps=0; }, 2000);
-      if(adminTaps >= 5){ adminTaps=0; tryOpenAdmin(); }
-    });
+    logo.addEventListener('click', handleAdminTap);
     logo.style.cursor = 'pointer';
   }
+  // Cũng tap vào popup đóng cửa 5 lần để mở Admin (dành cho chủ quán)
+  const closedBox = document.querySelector('#closedOverlay .closed-box');
+  if(closedBox) closedBox.addEventListener('click', handleAdminTap);
+
   loadAdminSettings();
   checkStoreHours();
   buildMenu();
