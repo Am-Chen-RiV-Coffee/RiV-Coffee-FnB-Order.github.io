@@ -215,64 +215,57 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
 </head>
 <body>
 <script>
-// Phát hiện trình duyệt không tương thích và tự động mở Chrome
+// Phát hiện trình duyệt in-app và hướng dẫn mở Chrome/Safari
 (function(){
   const ua = navigator.userAgent;
-  const isEdge = ua.indexOf('Edg/') !== -1 || ua.indexOf('Edge/') !== -1;
-  const isZalo = ua.indexOf('ZaloApp') !== -1 || ua.indexOf('zalo') !== -1 || ua.indexOf('Zalo') !== -1;
-  const isFBApp = ua.indexOf('FBAN') !== -1 || ua.indexOf('FBAV') !== -1;
-  const isMessenger = ua.indexOf('Messenger') !== -1 || ua.indexOf('MessengerLiteForiOS') !== -1;
-  const isWhatsApp = ua.indexOf('WhatsApp') !== -1;
-  const isInAppBrowser = isEdge || isZalo || isFBApp || isMessenger || isWhatsApp;
+  const isZalo    = /ZaloApp|zalo/i.test(ua);
+  const isFBApp   = /FBAN|FBAV|FB_IAB/i.test(ua);
+  const isMsg     = /Messenger|MessengerLiteForiOS/i.test(ua);
+  const isWA      = /WhatsApp/i.test(ua);
+  const isLine    = /Line\//i.test(ua);
+  const isInApp   = isZalo || isFBApp || isMsg || isWA || isLine;
 
-  if(isInAppBrowser){
-    const url = window.location.href;
-    const isAndroid = /Android/i.test(ua);
-    const isIOS = /iPhone|iPad|iPod/i.test(ua);
+  if(!isInApp) return;
 
-    if(isAndroid){
-      // Android: dùng intent để mở Chrome tự động
-      const intentUrl = 'intent://' + url.replace(/^https?:\/\//, '') + '#Intent;scheme=https;package=com.android.chrome;end';
-      window.location.href = intentUrl;
-    } else if(isIOS){
-      // iOS: dùng scheme của Chrome
-      const chromeUrl = url.replace(/^https/, 'googlechromes').replace(/^http/, 'googlechrome');
-      window.location.href = chromeUrl;
-      // Nếu Chrome không cài, hiện hướng dẫn sau 1.5s
-      setTimeout(function(){
-        showManualGuide('Chrome');
-      }, 1500);
-    } else {
-      showManualGuide('Edge');
-    }
+  const url       = window.location.href;
+  const isAndroid = /Android/i.test(ua);
+  const isIOS     = /iPhone|iPad|iPod/i.test(ua);
+
+  if(isAndroid){
+    // Thử mở Chrome bằng intent (hoạt động tốt trên Android 6+)
+    window.location.href = 'intent://' + url.replace(/^https?:\/\//, '')
+      + '#Intent;scheme=https;package=com.android.chrome;end';
+  } else if(isIOS){
+    // Thử mở Chrome trước
+    const chromeUrl = url.replace(/^https/, 'googlechromes').replace(/^http/, 'googlechrome');
+    window.location.href = chromeUrl;
+    // Nếu Chrome không cài → hiện hướng dẫn sau 1.5s
+    setTimeout(showGuide, 1500);
+  } else {
+    showGuide();
   }
 
-  function showManualGuide(browserName){
-    const url = window.location.href;
+  function showGuide(){
     document.addEventListener('DOMContentLoaded', function(){
-      const banner = document.createElement('div');
-      banner.innerHTML = `
-        <div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px">
-          <div style="background:#fff;border-radius:16px;padding:28px 24px;max-width:360px;text-align:center">
-            <div style="font-size:3rem;margin-bottom:12px">⚠️</div>
-            <h2 style="font-family:serif;color:#3b1f0e;margin:0 0 12px">Vui lòng mở bằng Chrome</h2>
-            <p style="font-size:0.9rem;color:#666;margin:0 0 6px;line-height:1.6">
-              Vui lòng mở trang này bằng <strong>Google Chrome</strong> để đặt hàng không bị lỗi.
-            </p>
-            <p style="font-size:0.85rem;color:#888;margin:0 0 20px;line-height:1.6">
-              Nhấn <strong>⋮</strong> góc trên phải → <strong>"Mở bằng trình duyệt"</strong>
-            </p>
-            <button onclick="navigator.clipboard && navigator.clipboard.writeText('${url}').then(()=>{ this.textContent='✅ Đã copy!'; })"
-              style="display:block;width:100%;background:#3b1f0e;color:#e8b94a;border:none;border-radius:10px;padding:12px;font-weight:700;font-size:0.95rem;margin-bottom:10px;cursor:pointer">
-              📋 Copy link
-            </button>
-            <button onclick="this.closest('div').parentElement.parentElement.remove()" 
-              style="background:none;border:1px solid #ccc;border-radius:10px;padding:10px;width:100%;font-size:0.85rem;color:#888;cursor:pointer">
-              Vẫn tiếp tục (có thể lỗi)
-            </button>
-          </div>
-        </div>`;
-      document.body.appendChild(banner);
+      const d = document.createElement('div');
+      d.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px';
+      d.innerHTML =
+        '<div style="background:#fff;border-radius:16px;padding:28px 22px;max-width:360px;width:100%;text-align:center">'
+        + '<div style="font-size:2.8rem;margin-bottom:10px">⚠️</div>'
+        + '<h2 style="font-family:serif;color:#3b1f0e;margin:0 0 10px;font-size:1.2rem">Mở bằng Chrome để đặt hàng</h2>'
+        + '<p style="font-size:0.87rem;color:#555;line-height:1.65;margin:0 0 6px">'
+        + 'Trình duyệt trong ứng dụng <b>không hỗ trợ</b> đặt hàng.</p>'
+        + '<p style="font-size:0.82rem;color:#777;line-height:1.7;margin:0 0 18px">'
+        + '📱 <b>Android:</b> Nhấn <b>⋮</b> → "Mở trong Chrome"<br>'
+        + '🍎 <b>iOS:</b> Nhấn <b>···</b> → "Mở trong Safari" / "Mở trong Chrome"</p>'
+        + '<button onclick="(navigator.clipboard?navigator.clipboard.writeText(\'' + url.replace(/'/g,"\\'") + '\').then(function(){this.textContent=\'✅ Đã copy link!\'},this):0)"'
+        + ' style="display:block;width:100%;background:#3b1f0e;color:#e8b94a;border:none;border-radius:10px;padding:12px;font-weight:700;font-size:0.95rem;margin-bottom:10px;cursor:pointer">'
+        + '📋 Copy link để dán vào Chrome</button>'
+        + '<button onclick="this.closest(\'[style]\').remove()"'
+        + ' style="background:none;border:1px solid #ccc;border-radius:10px;padding:10px;width:100%;font-size:0.84rem;color:#888;cursor:pointer">'
+        + 'Vẫn thử (có thể bị lỗi)</button>'
+        + '</div>';
+      document.body.appendChild(d);
     });
   }
 })();
@@ -570,12 +563,12 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
     </div>
   </div>
   <div class="admin-section">
-    <h3>📊 Google Sheets URL</h3>
-    <div style="font-size:0.78rem;color:#888;margin-bottom:8px;">Dán URL webhook Apps Script vào đây để đơn tự đổ vào Sheet</div>
-    <input type="text" id="adminSheetUrl" placeholder="https://script.google.com/macros/s/..."
-      style="width:100%;padding:8px 10px;border-radius:7px;border:1.5px solid var(--sand);font-size:0.78rem;font-family:'DM Sans',sans-serif;"
-      onchange="saveAdminSettings()">
-    <div style="font-size:0.7rem;color:#aaa;margin-top:4px;">Triển khai dưới dạng Web App trong Google Apps Script, chọn "Anyone" có thể truy cập.</div>
+    <h3>📊 Kết nối Google Sheets</h3>
+    <div style="font-size:0.78rem;color:#888;margin-bottom:8px;">URL Apps Script đã được nhúng cố định trong ứng dụng — đồng bộ tự động trên mọi thiết bị</div>
+    <div style="background:#e8f4e8;border-radius:7px;padding:10px 12px;font-size:0.79rem;color:#2d6a2d;font-weight:600;">
+      ✅ Đã kết nối: Google Sheets &amp; Email tự động
+    </div>
+    <div style="font-size:0.7rem;color:#aaa;margin-top:6px;word-break:break-all;">AKfycbxIiPhNxEmN6-0HS64esnp6HuYJc-mLkkoHSIPcw3FouWkDhFfAWmIvFoEuoQ68JHfJ0Q</div>
   </div>
   <div class="admin-section" id="adminMenuSection">
     <h3>🍽️ Bật/Tắt món &amp; Tồn kho</h3>
@@ -1691,7 +1684,7 @@ goPage = function(id, step){
 
 // ── ADMIN SETTINGS ────────────────────────────────────────
 // Lưu vào localStorage (chỉ trên thiết bị này — dành cho chủ quán)
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbze-FVHPQRyzzk982fYhe2_LXMX0SNpvq6UofU0zakv5S5F-EkXRwuYVv4Waxw4A7D5/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxIiPhNxEmN6-0HS64esnp6HuYJc-mLkkoHSIPcw3FouWkDhFfAWmIvFoEuoQ68JHfJ0Q/exec';
 
 let adminSettings = {
   open: '07:00', close: '22:00', manual: 'auto',
@@ -1758,7 +1751,7 @@ function saveAdminSettings(){
   adminSettings.close  = document.getElementById('adminClose')?.value || adminSettings.close;
   adminSettings.manual = document.getElementById('adminManualStatus')?.value || adminSettings.manual;
   adminSettings.closedMsg = document.getElementById('adminClosedMsg')?.value || adminSettings.closedMsg;
-  adminSettings.sheetUrl  = document.getElementById('adminSheetUrl')?.value || adminSettings.sheetUrl;
+  adminSettings.sheetUrl  = APPS_SCRIPT_URL; // luôn dùng URL cố định trong code
   // Collect item states
   document.querySelectorAll('.admin-item-toggle').forEach(inp => {
     const k = inp.dataset.key;
