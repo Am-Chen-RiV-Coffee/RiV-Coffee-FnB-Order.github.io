@@ -210,8 +210,7 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
 .closed-box p{font-size:0.84rem;color:#666;line-height:1.7;}
 .closed-box .open-time{font-size:0.85rem;font-weight:700;color:var(--coffee);margin-top:10px;}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-<script>emailjs.init('4eUjrRg5rx-XoTRgl');</script>
+
 </head>
 <body>
 
@@ -230,8 +229,7 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
 
 <!-- PRICE COMPARISON BANNER -->
 <div class="price-banner" id="priceBanner">
-  🏷️ Giá trên web này <strong>rẻ hơn 20%</strong> so với Shopee Food &amp; Xanh SM Ngon
-  <div class="sub-note">Đặt trực tiếp = không mất phí nền tảng → bạn &amp; quán đều có lợi</div>
+  🏷️ Tiết kiệm 20% so với giá Food App
 </div>
 
 <!-- CLOSED OVERLAY -->
@@ -288,7 +286,7 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
 <!-- PAGE 3: PAYMENT -->
 <div class="page" id="page-payment">
   <div class="page-title">Thanh toán</div>
-  <div class="page-sub">Chuyển khoản MB Bank trước khi giao</div>
+  <div class="page-sub">Chuyển khoản 100% Giá trị đơn hàng & Phí ship</div>
   <div class="summary-box" id="orderSummary"></div>
 
   <!-- TRUST GUIDE -->
@@ -302,7 +300,7 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
       <div class="trust-arrow">↓</div>
       <div class="trust-step">
         <div class="trust-icon">2</div>
-        <div class="trust-text"><strong>Quán xác nhận nhận tiền</strong> và phản hồi qua Messenger trước khi giao</div>
+        <div class="trust-text"><strong>Quán xác nhận nhận tiền</strong> và phản trước khi giao</div>
       </div>
       <div class="trust-arrow">↓</div>
       <div class="trust-step">
@@ -311,10 +309,8 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
       </div>
     </div>
     <div class="trust-notes">
-      <div class="trust-note-item">✅ Fanpage Facebook chính thống — bạn có thể xem lịch sử trước khi đặt</div>
       <div class="trust-note-item">✅ Mã đơn duy nhất, giúp đối soát nhanh nếu có sự cố</div>
-      <div class="trust-note-item">✅ Chưa nhận xác nhận → liên hệ quán hỏi lại <strong>trước khi chuyển tiền</strong></div>
-      <div class="trust-note-item">⚠️ Quán <strong>không bao giờ</strong> yêu cầu chuyển thêm tiền sau khi đã xác nhận</div>
+      <div class="trust-note-item">⚠️ Quán <strong>không </strong> yêu cầu chuyển thêm tiền sau khi đã xác nhận</div>
     </div>
     <div class="contact-row">
       <span class="contact-label">📞 Liên hệ quán:</span>
@@ -371,7 +367,7 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
       </div>
     </div>
     <div class="ck-reminder">
-      📌 Vui lòng ghi <strong>đúng nội dung</strong> chuyển khoản để quán đối soát nhanh và xác nhận đơn cho bạn
+      📌 Vui lòng ghi <strong>đúng nội dung</strong> chuyển khoản để quán đối soát nhanh và xác nhận đơn
     </div>
   </div>
 
@@ -452,7 +448,7 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
   <div style="background:#e8f5e9;border-radius:10px;padding:12px 14px;margin-bottom:12px;border:1.5px solid #b2dfbc;">
     <div style="font-size:0.85rem;font-weight:700;color:#2e7d32;margin-bottom:4px;">⏳ Đang chờ quán xác nhận</div>
     <div style="font-size:0.78rem;color:#444;line-height:1.6;">
-      Quán sẽ đối chiếu <strong>ảnh biên lai</strong> với mã đơn &amp; số tiền, sau đó phản hồi qua Messenger / Zalo / WhatsApp trong vài phút.<br>
+      Quán sẽ đối chiếu <strong>ảnh biên lai</strong> với mã đơn &amp; số tiền, sau đó phản hồi qua Messenger / Zalo / WhatsApp.<br>
       <span style="color:#888;">Sau 15 phút chưa có phản hồi → gọi <a href="tel:0356155524" style="color:var(--coffee);font-weight:700;">0356155524</a></span>
     </div>
   </div>
@@ -546,36 +542,35 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
 
 <div class="toast" id="toast"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" async></script>
 <script>
 // ── MENU ──────────────────────────────────────────────────
 const MENU = {
   "100% Culi": [
-    {n:"Culi Bạc xỉu",p:25000},{n:"Culi đen",p:20000},{n:"Culi muối Huế",p:30000},
-    {n:"Culi sữa đặc",p:25000},{n:"Culi sữa dừa",p:30000},{n:"Culi sữa kem",p:25000},
-    {n:"Culi sữa kem Caramel",p:30000},{n:"Culi sữa kem Choco",p:30000},
-    {n:"Culi sữa tươi",p:25000},
-    {n:"+ 1 viên Đá cà phê 4x4cm",p:9000,x:1},{n:"+ 1 shot Culi Espresso",p:8000,x:1}
+    {n:"Coffee Latte Đác rim",p:42000},{n:"Culi Bạc xỉu",p:28000},{n:"Culi đen",p:21000},{n:"Culi muối Huế",p:30000},
+    {n:"Culi sữa đặc",p:30000},{n:"Culi sữa dừa",p:35000},{n:"Culi sữa kem",p:29000},
+    {n:"Culi sữa kem Caramel",p:46000},{n:"Culi sữa kem Choco",p:42000},
+    {n:"Culi sữa tươi",p:26000},{n:"+ 1 shot Culi Espresso",p:7000,x:1},
+    {n:"+ 1 viên Đá cà phê 4x4cm",p:8000,x:1}
   ],
   "100% Arabica": [
-    {n:"Americano (Không đường)",p:25000},{n:"Ara bạc xỉu",p:30000},{n:"Ara đen",p:25000},
-    {n:"Ara sữa đặc",p:30000},{n:"Ara sữa kem",p:30000},
-    {n:"Coffee Latte Dalgona",p:35000},{n:"Coffee Latte Thốt nốt",p:40000},
-    {n:"Cold Brew Coffee",p:30000},{n:"Espresso Tonic",p:35000},
+    {n:"Americano",p:31000},{n:"Ara bạc xỉu",p:33000},{n:"Ara đen",p:31000},
+    {n:"Ara sữa đặc",p:38000},{n:"Ara sữa kem",p:36000},
+    {n:"Coffee Latte Dalgona",p:35000},{n:"Cold Brew Coffee",p:30000},
     {n:"+ 1 shot Arabica Espresso",p:10000,x:1}
   ],
   "Matcha – Houjicha": [
-    {n:"Houjicha Latte",p:35000},{n:"Matcha Coffee",p:35000},{n:"Matcha Latte",p:35000},
-    {n:"Matcha Lài Uji",p:35000},{n:"Matcha Sữa Dừa",p:40000},{n:"Matcha Thốt nốt",p:40000}
+    {n:"Houjicha Latte",p:37000},{n:"Matcha Coffee",p:39000},{n:"Matcha Latte",p:37000},
+    {n:"Matcha Lài Uji trân châu",p:42000},{n:"Matcha Sữa Dừa",p:47000},{n:"Matcha Đác rim",p:43000}
   ],
   "Trà – Kombucha": [
-    {n:"Kombucha Hibiscus",p:30000},{n:"Kombucha Lài Dâu tằm",p:30000},
-    {n:"Kombucha Lài trái Vải",p:35000},{n:"Kombucha Sen trái Vải",p:35000},
-    {n:"Kombucha Sen Yuzu",p:35000},{n:"Soda dâu tằm",p:30000},
-    {n:"Soda nhiệt đới",p:30000},{n:"Soda Yuzu",p:35000},
-    {n:"Trà Chanh chua",p:15000},{n:"Trà Lài Dâu tằm",p:25000},
-    {n:"Trà Lài trái vải",p:30000},{n:"Trà Tắc nhiệt đới",p:15000},
-    {n:"Trà sữa Truyền thống trân châu",p:35000}
+    {n:"Kombucha Hibiscus",p:26000},{n:"Kombucha Lài Dâu tằm",p:19000},
+    {n:"Kombucha Lài trái Vải",p:39000},{n:"Kombucha Sen trái Vải",p:39000},
+    {n:"Kombucha Sen Yuzu",p:36000},{n:"Soda dâu tằm",p:29000},
+    {n:"Soda nhiệt đới",p:29000},{n:"Soda Yuzu",p:46000},
+    {n:"Trà Chanh chua",p:14000},{n:"Trà Lài Dâu tằm",p:15000},
+    {n:"Trà Lài trái vải",p:37000},{n:"Trà Tắc nhiệt đới",p:14000},
+    {n:"Trà sữa Truyền thống trân châu",p:38000}
   ],
   "Chai 250–300ml": [
     {n:"Chai Ara Bạc xỉu",p:50000,x:1},{n:"Chai Ara đen",p:50000,x:1},
@@ -583,26 +578,26 @@ const MENU = {
     {n:"Chai Culi Bạc xỉu",p:45000,x:1},{n:"Chai Culi đen",p:45000,x:1},
     {n:"Chai Culi SK Caramel",p:50000,x:1},{n:"Chai Culi SK Choco",p:50000,x:1},
     {n:"Chai Culi sữa đặc",p:45000,x:1},{n:"Chai Culi sữa kem",p:45000,x:1},
-    {n:"Chai KBC Hibiscus",p:45000,x:1},{n:"Chai KBC Lài",p:45000,x:1},
-    {n:"Chai KBC Lài Dâu tằm",p:45000,x:1},{n:"Chai KBC Sen",p:45000,x:1},
-    {n:"Chai KBC Sen Yuzu",p:45000,x:1},{n:"Chai Trà sữa Truyền thống",p:45000,x:1}
+    {n:"Chai KBC Hibiscus",p:30000,x:1},{n:"Chai KBC Lài",p:30000,x:1},
+    {n:"Chai KBC Lài Dâu tằm",p:30000,x:1},{n:"Chai KBC Sen",p:30000,x:1},
+    {n:"Chai KBC Sen Yuzu",p:45000,x:1},{n:"Chai Trà sữa Truyền thống (Không trân châu)",p:40000,x:1}
   ],
   "Thêm": [
-    {n:"Phin nhôm màu",p:99000,x:1},{n:"Phin nhôm trắng",p:89000,x:1},
+    {n:"Phin nhôm màu",p:115000,x:1},{n:"Phin nhôm trắng",p:100000,x:1},
     {n:"Thêm 1 tẩy đá lớn ly giấy",p:6000,x:1},{n:"Thêm 1 tẩy đá lớn ly nhựa",p:5000,x:1},
     {n:"Thêm 1 tẩy đá nhỏ ly nhựa",p:4000,x:1},{n:"Thêm 1gr bột Houjicha",p:2000,x:1},
-    {n:"Thêm 1gr bột Matcha Nhật",p:2000,x:1},{n:"Thêm 20gr Dalgona",p:6000,x:1},
-    {n:"Thêm 20ml Caramel",p:7000,x:1},{n:"Thêm 20ml Choco",p:5000,x:1},
+    {n:"Thêm 1gr bột Matcha Nhật",p:2000,x:1},{n:"Thêm 20gr Dalgona",p:5000,x:1},
+    {n:"Thêm 20ml Caramel",p:6000,x:1},{n:"Thêm 20ml Choco",p:5000,x:1},
     {n:"Thêm 20ml sữa đặc",p:3000,x:1},{n:"Thêm 20ml sữa kem",p:2000,x:1},
     {n:"Thêm 25ml Arabica Espresso",p:5000,x:1},{n:"Thêm 25ml Culi Espresso",p:4000,x:1},
-    {n:"Thêm 30ml sữa tươi",p:3000,x:1},{n:"Thêm 50gr đặc rim",p:9000,x:1},
-    {n:"Thêm 50gr trân châu",p:7000,x:1}
+    {n:"Thêm 30ml sữa tươi",p:2000,x:1},{n:"Thêm 50gr đác rim",p:12000,x:1},
+    {n:"Thêm 50gr trân châu",p:6000,x:1}
   ]
 };
 
 const OPTS = {
-  sugar:{label:"Đường",c:["100%","70%","50%","30%","Không"]},
-  ice:  {label:"Đá",   c:["100%","70%","50%","30%","Không đá"]}
+  sugar:{label:"Đường",c:["Không đường","50%","100%"]},
+  ice:  {label:"Đá",   c:["Đá chung","Đá riêng","Không đá"]}
 };
 
 // ── SHIP RATES (cập nhật theo ảnh mới) ──────────────────
@@ -1445,32 +1440,6 @@ function confirmOrder(){
   document.getElementById('whatsappBtn').href='https://wa.me/84356155524?text='+msg;
   document.getElementById('zaloBtn').href='https://zalo.me/0356155524';
 
-  // ── GỬI EMAIL THÔNG BÁO ĐƠN HÀNG ──────────────────────
-  let itemsText = '';
-  items.forEach(i=>{
-    const opts=[];
-    if(i.hasOpts){if(i.sugar)opts.push(i.sugar+' đường');if(i.ice)opts.push(i.ice+' đá');}
-    itemsText += `• ${i.qty}x ${i.name}${opts.length?' ('+opts.join(', ')+')':''} — ${fmt(i.qty*i.price)}\n`;
-    if(i.note) itemsText += `   📝 ${i.note}\n`;
-  });
-  const ss2 = orderInfo.fee===0 ? 'Miễn phí' : fmt(orderInfo.fee);
-  const emailParams = {
-    order_ref:      orderInfo.ref,
-    order_time:     now.toLocaleString('vi-VN'),
-    customer_name:  orderInfo.name,
-    customer_phone: orderInfo.phone,
-    customer_addr:  orderInfo.addr,
-    customer_note:  orderInfo.note || '(không có)',
-    order_items:    itemsText,
-    subtotal:       fmt(orderInfo.sub),
-    ship_fee:       ss2,
-    total:          fmt(orderInfo.total),
-    order_nd:       orderInfo.nd,
-  };
-  emailjs.send('rivcoffeefnb', 'template_p5xrw5q', emailParams)
-    .then(()=>{ showToast('📧 Đã gửi thông báo đơn hàng!'); })
-    .catch((err)=>{ console.error('EmailJS lỗi:', err); });
-
   goPage('page-receipt',4);
 }
 
@@ -1753,6 +1722,7 @@ function exitAdmin(){
 }
 
 // ── GOOGLE SHEETS SUBMIT ──────────────────────────────────
+// ── GỬI ĐƠN HÀNG QUA GOOGLE APPS SCRIPT (Sheets + Email) ──
 async function submitToGoogleSheets(orderData){
   const url = adminSettings.sheetUrl;
   if(!url || !url.startsWith('https://script.google.com')) return;
@@ -1763,30 +1733,57 @@ async function submitToGoogleSheets(orderData){
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify(orderData)
     });
-  } catch(e){ console.warn('Sheets submit error:', e); }
+  } catch(e){ console.warn('Apps Script submit error:', e); }
 }
 
-// Override confirmOrder to also submit to Sheets
+// Override confirmOrder để gửi đơn hàng đầy đủ lên Apps Script (Sheets + Email)
 const _origConfirmOrder = confirmOrder;
 confirmOrder = function(){
   _origConfirmOrder();
-  // Build sheet row data
   const items = Object.values(cart);
-  const itemsStr = items.map(i=>`${i.qty}x ${i.name} (${i.sugar||''} đường, ${i.ice||''} đá)`).join(' | ');
+
+  // Build plain-text items list cho email
+  let itemsText = '';
+  items.forEach(i=>{
+    const opts=[];
+    if(i.hasOpts){if(i.sugar)opts.push(i.sugar+' đường');if(i.ice)opts.push(i.ice+' đá');}
+    itemsText += `• ${i.qty}x ${i.name}${opts.length?' ('+opts.join(', ')+')':''} — ${fmt(i.qty*i.price)}\n`;
+    if(i.note) itemsText += `   📝 ${i.note}\n`;
+  });
+  // Build items string cho Sheets
+  const itemsStr = items.map(i=>{
+    const opts=[];
+    if(i.hasOpts){if(i.sugar)opts.push(i.sugar+' đường');if(i.ice)opts.push(i.ice+' đá');}
+    return `${i.qty}x ${i.name}${opts.length?' ('+opts.join(', ')+')':''}`;
+  }).join(' | ');
+
   const now = new Date();
+  const shipLabel = orderInfo.fee===0 ? 'Miễn phí' : fmt(orderInfo.fee);
+
   submitToGoogleSheets({
-    timestamp: now.toISOString(),
-    ref: orderInfo.ref,
-    name: orderInfo.name,
-    phone: orderInfo.phone,
-    address: orderInfo.addr,
-    note: orderInfo.note,
-    items: itemsStr,
-    subtotal: orderInfo.sub,
-    ship_fee: orderInfo.fee,
-    total: orderInfo.total,
-    ship_km: orderInfo.km,
-    payment: 'MB Bank CK'
+    // --- Dữ liệu cho Google Sheets ---
+    timestamp:      now.toISOString(),
+    ref:            orderInfo.ref,
+    name:           orderInfo.name,
+    phone:          orderInfo.phone,
+    address:        orderInfo.addr,
+    note:           orderInfo.note || '',
+    items:          itemsStr,
+    subtotal:       orderInfo.sub,
+    ship_fee:       orderInfo.fee,
+    total:          orderInfo.total,
+    ship_km:        orderInfo.km,
+    payment:        'MB Bank CK',
+    // --- Dữ liệu cho Email thông báo ---
+    send_email:     true,
+    order_time:     now.toLocaleString('vi-VN'),
+    items_text:     itemsText,
+    subtotal_fmt:   fmt(orderInfo.sub),
+    ship_fee_fmt:   shipLabel,
+    total_fmt:      fmt(orderInfo.total),
+    order_nd:       orderInfo.nd,
+    // --- Ảnh biên lai (base64, nếu có) ---
+    proof_image:    proofImageData || ''
   });
 };
 
@@ -1826,11 +1823,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
   loadAdminSettings();
   checkStoreHours();
+  buildMenu();
   // Recheck every minute
   setInterval(checkStoreHours, 60000);
 });
-
-buildMenu();
 </script>
 </body>
 </html>
