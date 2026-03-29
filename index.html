@@ -215,28 +215,60 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
 </head>
 <body>
 <script>
-// Phát hiện Edge và hiện thông báo
+// Phát hiện trình duyệt không tương thích và tự động mở Chrome
 (function(){
   const ua = navigator.userAgent;
   const isEdge = ua.indexOf('Edg/') !== -1 || ua.indexOf('Edge/') !== -1;
-  if(isEdge){
+  const isZalo = ua.indexOf('ZaloApp') !== -1 || ua.indexOf('zalo') !== -1 || ua.indexOf('Zalo') !== -1;
+  const isFBApp = ua.indexOf('FBAN') !== -1 || ua.indexOf('FBAV') !== -1;
+  const isMessenger = ua.indexOf('Messenger') !== -1 || ua.indexOf('MessengerLiteForiOS') !== -1;
+  const isWhatsApp = ua.indexOf('WhatsApp') !== -1;
+  const isInAppBrowser = isEdge || isZalo || isFBApp || isMessenger || isWhatsApp;
+
+  if(isInAppBrowser){
+    const url = window.location.href;
+    const isAndroid = /Android/i.test(ua);
+    const isIOS = /iPhone|iPad|iPod/i.test(ua);
+
+    if(isAndroid){
+      // Android: dùng intent để mở Chrome tự động
+      const intentUrl = 'intent://' + url.replace(/^https?:\/\//, '') + '#Intent;scheme=https;package=com.android.chrome;end';
+      window.location.href = intentUrl;
+    } else if(isIOS){
+      // iOS: dùng scheme của Chrome
+      const chromeUrl = url.replace(/^https/, 'googlechromes').replace(/^http/, 'googlechrome');
+      window.location.href = chromeUrl;
+      // Nếu Chrome không cài, hiện hướng dẫn sau 1.5s
+      setTimeout(function(){
+        showManualGuide('Chrome');
+      }, 1500);
+    } else {
+      showManualGuide('Edge');
+    }
+  }
+
+  function showManualGuide(browserName){
+    const url = window.location.href;
     document.addEventListener('DOMContentLoaded', function(){
       const banner = document.createElement('div');
       banner.innerHTML = `
         <div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px">
           <div style="background:#fff;border-radius:16px;padding:28px 24px;max-width:360px;text-align:center">
             <div style="font-size:3rem;margin-bottom:12px">⚠️</div>
-            <h2 style="font-family:serif;color:#3b1f0e;margin:0 0 12px">Vui lòng dùng Chrome</h2>
-            <p style="font-size:0.9rem;color:#666;margin:0 0 20px;line-height:1.6">
-              Trang đặt hàng của <strong>RiV Coffee FnB</strong> hoạt động tốt nhất trên <strong>Google Chrome</strong>.<br><br>
-              Trình duyệt <strong>Microsoft Edge</strong> có thể gây lỗi khi gửi đơn hàng.
+            <h2 style="font-family:serif;color:#3b1f0e;margin:0 0 12px">Vui lòng mở bằng Chrome</h2>
+            <p style="font-size:0.9rem;color:#666;margin:0 0 6px;line-height:1.6">
+              Vui lòng mở trang này bằng <strong>Google Chrome</strong> để đặt hàng không bị lỗi.
             </p>
-            <a href="${window.location.href}" style="display:block;background:#4285f4;color:#fff;border-radius:10px;padding:12px;font-weight:700;text-decoration:none;font-size:0.95rem;margin-bottom:10px">
-              🌐 Mở bằng Chrome
-            </a>
+            <p style="font-size:0.85rem;color:#888;margin:0 0 20px;line-height:1.6">
+              Nhấn <strong>⋮</strong> góc trên phải → <strong>"Mở bằng trình duyệt"</strong>
+            </p>
+            <button onclick="navigator.clipboard && navigator.clipboard.writeText('${url}').then(()=>{ this.textContent='✅ Đã copy!'; })"
+              style="display:block;width:100%;background:#3b1f0e;color:#e8b94a;border:none;border-radius:10px;padding:12px;font-weight:700;font-size:0.95rem;margin-bottom:10px;cursor:pointer">
+              📋 Copy link
+            </button>
             <button onclick="this.closest('div').parentElement.parentElement.remove()" 
               style="background:none;border:1px solid #ccc;border-radius:10px;padding:10px;width:100%;font-size:0.85rem;color:#888;cursor:pointer">
-              Vẫn tiếp tục với Edge
+              Vẫn tiếp tục (có thể lỗi)
             </button>
           </div>
         </div>`;
