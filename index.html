@@ -690,7 +690,7 @@ function chg(key, idx, d){
   // Kiểm tra tồn kho nếu đang tăng số lượng
   if(d > 0){
     const s = adminSettings.items[key];
-    if(s && s.stock >= 0){
+    if(s && typeof s.stock === 'number' && s.stock >= 0){
       const newQty = (cart[key].qty || 0) + d;
       if(newQty > s.stock){
         showToast(`⚠️ ${item.n} chỉ còn ${s.stock} phần!`);
@@ -1608,12 +1608,24 @@ async function loadAdminSettings(){
         const s = String(val);
         // Dạng HH:MM bình thường
         if (/^\d{1,2}:\d{2}$/.test(s)) return s;
-        // Dạng ISO date từ Sheets: 1899-12-30T01:00:00.000Z → lấy giờ UTC
-        const d = new Date(s);
-        if (!isNaN(d)) {
-          const h = String(d.getUTCHours()).padStart(2,'0');
-          const m = String(d.getUTCMinutes()).padStart(2,'0');
+        // Dạng số thập phân từ Sheets: 0.333... = 8:00 (phần của 24h)
+        const num = parseFloat(s);
+        if (!isNaN(num) && num >= 0 && num < 1) {
+          const totalMin = Math.round(num * 24 * 60);
+          const h = String(Math.floor(totalMin / 60)).padStart(2,'0');
+          const m = String(totalMin % 60).padStart(2,'0');
           return h + ':' + m;
+        }
+        // Dạng ISO date string
+        if (s.includes('T') || s.includes('-')) {
+          // Tính số giây từ epoch, rồi lấy phần giờ/phút
+          const d = new Date(s);
+          if (!isNaN(d)) {
+            // Sheets dùng 1899-12-30 làm epoch, lấy giờ local
+            const h = String(d.getHours()).padStart(2,'0');
+            const m2 = String(d.getMinutes()).padStart(2,'0');
+            return h + ':' + m2;
+          }
         }
         return null;
       }
