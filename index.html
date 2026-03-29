@@ -180,6 +180,35 @@ textarea{resize:vertical;min-height:56px;}
 .toast{position:fixed;top:15px;left:50%;transform:translateX(-50%);background:var(--brown);color:var(--gold-light);padding:8px 18px;border-radius:7px;font-size:0.8rem;z-index:1000;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;}
 .toast.show{opacity:1;}
 #uploadArea:hover{border-color:var(--gold);background:#fdf3e0;}
+
+/* PRICE COMPARE BANNER */
+.price-banner{background:linear-gradient(90deg,#e8501a 0%,#c8922a 100%);color:#fff;text-align:center;padding:8px 14px;font-size:0.78rem;font-weight:600;line-height:1.5;letter-spacing:0.01em;}
+.price-banner strong{font-size:0.9rem;}
+.price-banner .sub-note{font-size:0.7rem;opacity:0.88;margin-top:1px;}
+
+/* ADMIN PANEL */
+.admin-page{display:none;padding:14px 13px 80px;max-width:520px;margin:0 auto;}
+.admin-page.active{display:block;}
+.admin-section{background:#fff;border-radius:10px;padding:14px;margin-bottom:12px;box-shadow:0 1px 5px rgba(59,31,14,0.08);}
+.admin-section h3{font-size:0.9rem;font-weight:700;color:var(--brown);margin-bottom:10px;}
+.admin-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--sand2);gap:8px;}
+.admin-row:last-child{border-bottom:none;}
+.admin-item-name{flex:1;font-size:0.81rem;color:var(--brown);}
+.admin-controls{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.toggle-switch{position:relative;width:36px;height:20px;flex-shrink:0;}
+.toggle-switch input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#ccc;border-radius:20px;transition:0.3s;}
+.toggle-slider:before{content:'';position:absolute;width:14px;height:14px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:0.3s;}
+input:checked+.toggle-slider{background:var(--green);}
+input:checked+.toggle-slider:before{transform:translateX(16px);}
+.stock-input{width:52px;padding:3px 6px;border-radius:5px;border:1.5px solid var(--sand);font-size:0.78rem;text-align:center;font-family:'DM Sans',sans-serif;}
+.time-input{padding:5px 8px;border-radius:6px;border:1.5px solid var(--sand);font-size:0.82rem;font-family:'DM Sans',sans-serif;color:var(--brown);}
+.closed-overlay{display:none;position:fixed;inset:0;background:rgba(59,31,14,0.82);z-index:500;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:30px;}
+.closed-overlay.show{display:flex;}
+.closed-box{background:#fff;border-radius:14px;padding:28px 22px;max-width:320px;width:100%;}
+.closed-box h2{font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--brown);margin-bottom:8px;}
+.closed-box p{font-size:0.84rem;color:#666;line-height:1.7;}
+.closed-box .open-time{font-size:0.85rem;font-weight:700;color:var(--coffee);margin-top:10px;}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>emailjs.init('4eUjrRg5rx-XoTRgl');</script>
@@ -199,7 +228,22 @@ textarea{resize:vertical;min-height:56px;}
   </div>
 </div>
 
-<!-- PAGE 1: MENU -->
+<!-- PRICE COMPARISON BANNER -->
+<div class="price-banner" id="priceBanner">
+  🏷️ Giá trên web này <strong>rẻ hơn 20%</strong> so với Shopee Food &amp; Xanh SM Ngon
+  <div class="sub-note">Đặt trực tiếp = không mất phí nền tảng → bạn &amp; quán đều có lợi</div>
+</div>
+
+<!-- CLOSED OVERLAY -->
+<div class="closed-overlay" id="closedOverlay">
+  <div class="closed-box">
+    <div style="font-size:2.5rem;margin-bottom:8px">⏰</div>
+    <h2>Quán đang đóng cửa</h2>
+    <p>Bạn có thể xem menu và lên kế hoạch đặt hàng, nhưng chưa thể đặt lúc này.</p>
+    <div class="open-time" id="closedOpenTime"></div>
+    <div style="font-size:0.77rem;color:#aaa;margin-top:10px;">Liên hệ: <a href="tel:0356155524" style="color:var(--coffee)">0356155524</a></div>
+  </div>
+</div>
 <div class="page active" id="page-menu">
   <div class="cat-tabs" id="catTabs"></div>
   <div id="menuList"></div>
@@ -427,6 +471,56 @@ textarea{resize:vertical;min-height:56px;}
   <button class="btn-dark" onclick="saveReceipt()">📸 Lưu ảnh đơn hàng</button>
   <button class="btn-outline" onclick="goPage('page-menu',1)">✏️ Quay lại chọn món</button>
   <button class="btn-danger" onclick="showCancelModal()">✕ Hủy đơn hàng</button>
+</div>
+
+<!-- ADMIN PAGE -->
+<div class="admin-page" id="page-admin">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+    <div style="font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--brown)">⚙️ Quản lý quán</div>
+    <button class="btn-back" onclick="exitAdmin()">← Thoát</button>
+  </div>
+  <div class="admin-section">
+    <h3>🕐 Thời gian hoạt động</h3>
+    <div style="font-size:0.78rem;color:#888;margin-bottom:10px;">Ngoài thời gian này khách chỉ xem menu, không đặt được</div>
+    <div class="admin-row">
+      <span class="admin-item-name">Mở cửa</span>
+      <input type="time" class="time-input" id="adminOpen" value="07:00" onchange="saveAdminSettings()">
+    </div>
+    <div class="admin-row">
+      <span class="admin-item-name">Đóng cửa</span>
+      <input type="time" class="time-input" id="adminClose" value="22:00" onchange="saveAdminSettings()">
+    </div>
+    <div class="admin-row">
+      <span class="admin-item-name">Trạng thái thủ công</span>
+      <div class="admin-controls">
+        <select id="adminManualStatus" style="padding:4px 8px;border-radius:6px;border:1.5px solid var(--sand);font-family:'DM Sans',sans-serif;font-size:0.78rem;" onchange="saveAdminSettings()">
+          <option value="auto">Tự động (theo giờ)</option>
+          <option value="open">Luôn mở</option>
+          <option value="closed">Luôn đóng</option>
+        </select>
+      </div>
+    </div>
+    <div class="admin-row" style="flex-wrap:wrap;gap:5px">
+      <span class="admin-item-name">Thông báo đóng cửa</span>
+      <input type="text" id="adminClosedMsg" value="Hẹn gặp lại bạn vào ngày mai nhé! ☕"
+        style="flex:1;min-width:160px;padding:5px 9px;border-radius:6px;border:1.5px solid var(--sand);font-size:0.79rem;font-family:'DM Sans',sans-serif;"
+        onchange="saveAdminSettings()">
+    </div>
+  </div>
+  <div class="admin-section">
+    <h3>📊 Google Sheets URL</h3>
+    <div style="font-size:0.78rem;color:#888;margin-bottom:8px;">Dán URL webhook Apps Script vào đây để đơn tự đổ vào Sheet</div>
+    <input type="text" id="adminSheetUrl" placeholder="https://script.google.com/macros/s/..."
+      style="width:100%;padding:8px 10px;border-radius:7px;border:1.5px solid var(--sand);font-size:0.78rem;font-family:'DM Sans',sans-serif;"
+      onchange="saveAdminSettings()">
+    <div style="font-size:0.7rem;color:#aaa;margin-top:4px;">Triển khai dưới dạng Web App trong Google Apps Script, chọn "Anyone" có thể truy cập.</div>
+  </div>
+  <div class="admin-section" id="adminMenuSection">
+    <h3>🍽️ Bật/Tắt món &amp; Tồn kho</h3>
+    <div style="font-size:0.78rem;color:#888;margin-bottom:10px;">Tắt = ẩn khỏi menu khách • Tồn kho 0 = hết hàng (ẩn)</div>
+    <div id="adminItemList"></div>
+  </div>
+  <button class="btn-primary" onclick="saveAdminSettings();showToast('✅ Đã lưu cài đặt')">💾 Lưu tất cả</button>
 </div>
 
 <!-- CART BAR -->
@@ -895,6 +989,20 @@ const DISTRICT_COORDS = {
 
 };
 
+  // Quận 2 cũ — phường (nay thuộc TP Thủ Đức)
+  "an khanh":{lat:10.7945,lng:106.7490},"an loi dong":{lat:10.7900,lng:106.7470},
+  "an phu":{lat:10.8050,lng:106.7450},"binh an":{lat:10.8100,lng:106.7550},
+  "binh khanh":{lat:10.7930,lng:106.7430},"binh trung dong":{lat:10.7850,lng:106.7550},
+  "binh trung tay":{lat:10.7800,lng:106.7500},"cat lai":{lat:10.7700,lng:106.7760},
+  "thao dien":{lat:10.8040,lng:106.7310},"thanh my loi":{lat:10.7900,lng:106.7700},
+  "thu thiem":{lat:10.7860,lng:106.7180},
+  // Quận 9 cũ — phường (nay thuộc TP Thủ Đức)
+  "hiep phu":{lat:10.8250,lng:106.7780},"long binh":{lat:10.8350,lng:106.7900},
+  "long phuoc":{lat:10.8500,lng:106.7950},"long thanh my":{lat:10.8420,lng:106.8050},
+  "long truong":{lat:10.8450,lng:106.8020},"phu huu":{lat:10.8300,lng:106.7860},
+  "phuoc binh":{lat:10.8220,lng:106.7820},"tang nhon phu a":{lat:10.8500,lng:106.7780},
+  "tang nhon phu b":{lat:10.8480,lng:106.7810},
+
 function haversine(a,b,c,d){
   const R=6371,dL=(c-a)*Math.PI/180,dN=(d-b)*Math.PI/180;
   const x=Math.sin(dL/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dN/2)**2;
@@ -1124,6 +1232,27 @@ const WARD_LIST = [
   'Quận 1','Quận 3','Quận 4','Quận 5','Quận 6','Quận 7','Quận 8','Quận 10','Quận 11',
   'Quận 12','Tân Bình','Tân Phú','Bình Tân','Bình Thạnh','Gò Vấp','Phú Nhuận',
   'TP Thủ Đức','Nhà Bè','Bình Chánh','Hóc Môn','Củ Chi','Cần Giờ',
+  // Quận 2 cũ (nay thuộc TP Thủ Đức)
+  'P. An Khánh, Q.2 (TP Thủ Đức)','P. An Lợi Đông, Q.2 (TP Thủ Đức)',
+  'P. An Phú, Q.2 (TP Thủ Đức)','P. Bình An, Q.2 (TP Thủ Đức)',
+  'P. Bình Khánh, Q.2 (TP Thủ Đức)','P. Bình Trưng Đông, Q.2 (TP Thủ Đức)',
+  'P. Bình Trưng Tây, Q.2 (TP Thủ Đức)','P. Cát Lái, Q.2 (TP Thủ Đức)',
+  'P. Thảo Điền, Q.2 (TP Thủ Đức)','P. Thạnh Mỹ Lợi, Q.2 (TP Thủ Đức)',
+  'P. Thủ Thiêm, Q.2 (TP Thủ Đức)',
+  // Quận 9 cũ (nay thuộc TP Thủ Đức)
+  'P. Hiệp Phú, Q.9 (TP Thủ Đức)','P. Long Bình, Q.9 (TP Thủ Đức)',
+  'P. Long Phước, Q.9 (TP Thủ Đức)','P. Long Thạnh Mỹ, Q.9 (TP Thủ Đức)',
+  'P. Long Trường, Q.9 (TP Thủ Đức)','P. Phú Hữu, Q.9 (TP Thủ Đức)',
+  'P. Phước Bình, Q.9 (TP Thủ Đức)','P. Phước Long A, Q.9 (TP Thủ Đức)',
+  'P. Phước Long B, Q.9 (TP Thủ Đức)','P. Tân Phú, Q.9 (TP Thủ Đức)',
+  'P. Tăng Nhơn Phú A, Q.9 (TP Thủ Đức)','P. Tăng Nhơn Phú B, Q.9 (TP Thủ Đức)',
+  'P. Trường Thạnh, Q.9 (TP Thủ Đức)',
+  // Thủ Đức cũ (nay thuộc TP Thủ Đức)
+  'P. Bình Chiểu, TP Thủ Đức','P. Bình Thọ, TP Thủ Đức',
+  'P. Hiệp Bình Chánh, TP Thủ Đức','P. Hiệp Bình Phước, TP Thủ Đức',
+  'P. Linh Chiều, TP Thủ Đức','P. Linh Đông, TP Thủ Đức',
+  'P. Linh Tây, TP Thủ Đức','P. Linh Trung, TP Thủ Đức','P. Linh Xuân, TP Thủ Đức',
+  'P. Tam Bình, TP Thủ Đức','P. Tam Phú, TP Thủ Đức','P. Trường Thọ, TP Thủ Đức',
   // Phường Tân Phú
   'P. Tân Quý, Tân Phú','P. Tân Thành, Tân Phú','P. Tân Sơn Nhì, Tân Phú',
   'P. Phú Thọ Hoà, Tân Phú','P. Hoà Thành, Tân Phú','P. Tây Thành, Tân Phú',
@@ -1468,6 +1597,238 @@ goPage = function(id, step){
   }
   _origGoPage(id, step);
 };
+
+// ── ADMIN SETTINGS ────────────────────────────────────────
+// Lưu vào localStorage (chỉ trên thiết bị này — dành cho chủ quán)
+let adminSettings = {
+  open: '07:00', close: '22:00', manual: 'auto',
+  closedMsg: 'Hẹn gặp lại bạn vào ngày mai nhé! ☕',
+  sheetUrl: '',
+  items: {}  // key -> {enabled:true, stock:-1}  (-1 = không giới hạn)
+};
+
+function loadAdminSettings(){
+  try {
+    const s = localStorage.getItem('rivAdminSettings');
+    if(s) adminSettings = {...adminSettings, ...JSON.parse(s)};
+  } catch(e){}
+}
+
+function saveAdminSettings(){
+  adminSettings.open   = document.getElementById('adminOpen')?.value || adminSettings.open;
+  adminSettings.close  = document.getElementById('adminClose')?.value || adminSettings.close;
+  adminSettings.manual = document.getElementById('adminManualStatus')?.value || adminSettings.manual;
+  adminSettings.closedMsg = document.getElementById('adminClosedMsg')?.value || adminSettings.closedMsg;
+  adminSettings.sheetUrl  = document.getElementById('adminSheetUrl')?.value || adminSettings.sheetUrl;
+  // Collect item states
+  document.querySelectorAll('.admin-item-toggle').forEach(inp => {
+    const k = inp.dataset.key;
+    if(!adminSettings.items[k]) adminSettings.items[k]={enabled:true,stock:-1};
+    adminSettings.items[k].enabled = inp.checked;
+  });
+  document.querySelectorAll('.admin-item-stock').forEach(inp => {
+    const k = inp.dataset.key;
+    if(!adminSettings.items[k]) adminSettings.items[k]={enabled:true,stock:-1};
+    adminSettings.items[k].stock = parseInt(inp.value) ?? -1;
+  });
+  try{ localStorage.setItem('rivAdminSettings', JSON.stringify(adminSettings)); } catch(e){}
+}
+
+function isItemAvailable(key){
+  const s = adminSettings.items[key];
+  if(!s) return true; // default: available
+  if(!s.enabled) return false;
+  if(s.stock === 0) return false;
+  return true;
+}
+
+// ── STORE HOURS ───────────────────────────────────────────
+function isStoreOpen(){
+  if(adminSettings.manual === 'open') return true;
+  if(adminSettings.manual === 'closed') return false;
+  const now = new Date();
+  const cur = now.getHours()*60 + now.getMinutes();
+  const [oh,om] = adminSettings.open.split(':').map(Number);
+  const [ch,cm] = adminSettings.close.split(':').map(Number);
+  const openMin = oh*60+om, closeMin = ch*60+cm;
+  if(openMin < closeMin) return cur >= openMin && cur < closeMin;
+  // overnight
+  return cur >= openMin || cur < closeMin;
+}
+
+function checkStoreHours(){
+  const overlay = document.getElementById('closedOverlay');
+  const timeEl  = document.getElementById('closedOpenTime');
+  if(isStoreOpen()){
+    overlay.classList.remove('show');
+    // Show order bar if cart has items
+    updateBar();
+  } else {
+    overlay.classList.add('show');
+    timeEl.textContent = `Giờ mở cửa: ${adminSettings.open} – ${adminSettings.close}`;
+    // show message
+    const msg = adminSettings.closedMsg || 'Quán tạm đóng cửa.';
+    const msgEl = overlay.querySelector('p');
+    if(msgEl) msgEl.textContent = msg;
+    document.getElementById('cartBar').classList.add('hidden');
+  }
+}
+
+// Override cart bar update to respect store hours
+const _origUpdateBar = updateBar;
+updateBar = function(){
+  _origUpdateBar();
+  if(!isStoreOpen()){
+    document.getElementById('cartBar').classList.add('hidden');
+  }
+};
+
+// ── ADMIN UI ──────────────────────────────────────────────
+function buildAdminItemList(){
+  const container = document.getElementById('adminItemList');
+  if(!container) return;
+  let html = '';
+  Object.keys(MENU).forEach(cat => {
+    html += `<div style="font-size:0.8rem;font-weight:700;color:var(--coffee);margin:10px 0 6px;padding-top:8px;border-top:1px solid var(--sand2)">${cat}</div>`;
+    MENU[cat].forEach((item, idx) => {
+      const key = cat + '||' + idx;
+      const s = adminSettings.items[key] || {enabled:true, stock:-1};
+      html += `<div class="admin-row">
+        <span class="admin-item-name" style="font-size:0.78rem">${item.n}</span>
+        <div class="admin-controls">
+          <input type="number" class="stock-input admin-item-stock" data-key="${key}"
+            value="${s.stock < 0 ? '' : s.stock}" placeholder="∞" min="0"
+            title="Tồn kho (-1 = không giới hạn)" onchange="saveAdminSettings()">
+          <label class="toggle-switch" title="${s.enabled?'Đang bật':'Đang tắt'}">
+            <input type="checkbox" class="admin-item-toggle" data-key="${key}"
+              ${s.enabled ? 'checked' : ''} onchange="saveAdminSettings()">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>`;
+    });
+  });
+  container.innerHTML = html;
+}
+
+let adminUnlocked = false;
+function tryOpenAdmin(){
+  if(adminUnlocked){ openAdmin(); return; }
+  const pw = prompt('Nhập mật khẩu quản lý:');
+  if(pw === 'rivcoffee2025'){
+    adminUnlocked = true;
+    openAdmin();
+  } else if(pw !== null){
+    showToast('❌ Sai mật khẩu');
+  }
+}
+
+function openAdmin(){
+  loadAdminSettings();
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-admin').classList.add('active');
+  document.getElementById('cartBar').classList.add('hidden');
+  // Sync settings to form
+  const ao = document.getElementById('adminOpen');
+  const ac = document.getElementById('adminClose');
+  const am = document.getElementById('adminManualStatus');
+  const acm = document.getElementById('adminClosedMsg');
+  const asu = document.getElementById('adminSheetUrl');
+  if(ao) ao.value = adminSettings.open;
+  if(ac) ac.value = adminSettings.close;
+  if(am) am.value = adminSettings.manual;
+  if(acm) acm.value = adminSettings.closedMsg;
+  if(asu) asu.value = adminSettings.sheetUrl;
+  buildAdminItemList();
+  window.scrollTo(0,0);
+}
+
+function exitAdmin(){
+  saveAdminSettings();
+  document.getElementById('page-admin').classList.remove('active');
+  goPage('page-menu',1);
+  buildMenu();
+  checkStoreHours();
+  showToast('✅ Đã lưu &amp; thoát quản lý');
+}
+
+// ── GOOGLE SHEETS SUBMIT ──────────────────────────────────
+async function submitToGoogleSheets(orderData){
+  const url = adminSettings.sheetUrl;
+  if(!url || !url.startsWith('https://script.google.com')) return;
+  try {
+    await fetch(url, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(orderData)
+    });
+  } catch(e){ console.warn('Sheets submit error:', e); }
+}
+
+// Override confirmOrder to also submit to Sheets
+const _origConfirmOrder = confirmOrder;
+confirmOrder = function(){
+  _origConfirmOrder();
+  // Build sheet row data
+  const items = Object.values(cart);
+  const itemsStr = items.map(i=>`${i.qty}x ${i.name} (${i.sugar||''} đường, ${i.ice||''} đá)`).join(' | ');
+  const now = new Date();
+  submitToGoogleSheets({
+    timestamp: now.toISOString(),
+    ref: orderInfo.ref,
+    name: orderInfo.name,
+    phone: orderInfo.phone,
+    address: orderInfo.addr,
+    note: orderInfo.note,
+    items: itemsStr,
+    subtotal: orderInfo.sub,
+    ship_fee: orderInfo.fee,
+    total: orderInfo.total,
+    ship_km: orderInfo.km,
+    payment: 'MB Bank CK'
+  });
+};
+
+// ── FILTER MENU BY AVAILABILITY ───────────────────────────
+// Override buildMenu to hide disabled items
+const _origBuildMenu = buildMenu;
+buildMenu = function(){
+  // Filter MENU based on admin settings before rendering
+  _origBuildMenu();
+  // After build, hide unavailable item cards
+  // We need to patch after render – simplest: hide .item-card for disabled items
+  // Actually let's patch BEFORE render by temporarily marking items
+  // Re-render approach: already done in _origBuildMenu, so we hide after
+  const catItems = MENU[curCat];
+  if(!catItems) return;
+  const cards = document.querySelectorAll('#menuList .item-card');
+  catItems.forEach((item, idx) => {
+    const key = curCat + '||' + idx;
+    if(!isItemAvailable(key) && cards[idx]){
+      cards[idx].style.display = 'none';
+    }
+  });
+};
+
+// Add secret admin trigger: tap header logo 5 times quickly
+let adminTaps = 0, adminTimer = null;
+document.addEventListener('DOMContentLoaded', ()=>{
+  const logo = document.querySelector('.header img');
+  if(logo){
+    logo.addEventListener('click', ()=>{
+      adminTaps++;
+      clearTimeout(adminTimer);
+      adminTimer = setTimeout(()=>{ adminTaps=0; }, 2000);
+      if(adminTaps >= 5){ adminTaps=0; tryOpenAdmin(); }
+    });
+    logo.style.cursor = 'pointer';
+  }
+  loadAdminSettings();
+  checkStoreHours();
+  // Recheck every minute
+  setInterval(checkStoreHours, 60000);
+});
 
 buildMenu();
 </script>
