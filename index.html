@@ -687,6 +687,17 @@ function chg(key, idx, d){
     sugar:OPTS.sugar.c[0], ice:OPTS.ice.c[0],
     note:'', cat:curCat, hasOpts:!item.x
   };
+  // Kiểm tra tồn kho nếu đang tăng số lượng
+  if(d > 0){
+    const s = adminSettings.items[key];
+    if(s && s.stock >= 0){
+      const newQty = (cart[key].qty || 0) + d;
+      if(newQty > s.stock){
+        showToast(`⚠️ ${item.n} chỉ còn ${s.stock} phần!`);
+        return;
+      }
+    }
+  }
   cart[key].qty = Math.max(0, cart[key].qty + d);
   if(cart[key].qty === 0) delete cart[key];
   const id = sid(key);
@@ -1570,7 +1581,7 @@ goPage = function(id, step){
 
 // ── ADMIN SETTINGS ────────────────────────────────────────
 // Lưu vào localStorage (chỉ trên thiết bị này — dành cho chủ quán)
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzStPyNaInWcxbqe2yfRUDH6z0jn1iLQSzYTHm5gFuZI_2Wv7qiqsMVyq-HodchW3jO/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwuxle39v60WNKwC4HSqyvWFuwwxrB9cNWvb6PBQOe-LEk-0E1cJ2g0_QhEpMlQU0k/exec';
 
 let adminSettings = {
   open: '07:00', close: '22:00', manual: 'auto',
@@ -1591,8 +1602,23 @@ async function loadAdminSettings(){
     const json = await res.json();
     if(json.status === 'ok' && json.settings && Object.keys(json.settings).length > 0){
       const remote = json.settings;
-      if(remote.open)      adminSettings.open      = remote.open;
-      if(remote.close)     adminSettings.close     = remote.close;
+      // Google Sheets có thể convert giờ thành ISO date string → cần parse lại
+      function parseTime(val) {
+        if (!val) return null;
+        const s = String(val);
+        // Dạng HH:MM bình thường
+        if (/^\d{1,2}:\d{2}$/.test(s)) return s;
+        // Dạng ISO date từ Sheets: 1899-12-30T01:00:00.000Z → lấy giờ UTC
+        const d = new Date(s);
+        if (!isNaN(d)) {
+          const h = String(d.getUTCHours()).padStart(2,'0');
+          const m = String(d.getUTCMinutes()).padStart(2,'0');
+          return h + ':' + m;
+        }
+        return null;
+      }
+      if(remote.open)      adminSettings.open      = parseTime(remote.open) || adminSettings.open;
+      if(remote.close)     adminSettings.close     = parseTime(remote.close) || adminSettings.close;
       if(remote.manual)    adminSettings.manual    = remote.manual;
       if(remote.closedMsg) adminSettings.closedMsg = remote.closedMsg;
       if(remote.items)     adminSettings.items     = JSON.parse(remote.items || '{}');
