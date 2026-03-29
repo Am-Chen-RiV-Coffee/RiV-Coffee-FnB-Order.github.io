@@ -719,7 +719,9 @@ function updateBar(){
   const tq = items.reduce((s,i)=>s+i.qty,0);
   const ta = items.reduce((s,i)=>s+i.qty*i.price,0);
   const bar = document.getElementById('cartBar');
-  if(tq===0){bar.classList.add('hidden');return;}
+  // Chỉ hiện thanh ở bước 1 (trang chọn món)
+  const onStep1 = document.getElementById('page-menu')?.classList.contains('active');
+  if(tq===0 || !onStep1){bar.classList.add('hidden');return;}
   bar.classList.remove('hidden');
   document.getElementById('cartCount').textContent = tq+' món';
   document.getElementById('cartTotal').textContent = fmt(ta);
@@ -756,6 +758,50 @@ const MERGE_MAP = {
   // Quận 1 cũ → Quận 1 mới (Trung tâm)
   "quan 1":{lat:10.7769,lng:106.7009},"q1":{lat:10.7769,lng:106.7009},
   "trung tam":{lat:10.7769,lng:106.7009},
+  // Phường cũ Quận 1
+  "ben nghe":{lat:10.7740,lng:106.7050},"ben thanh":{lat:10.7726,lng:106.6980},
+  "co giang":{lat:10.7620,lng:106.7020},"cau kho":{lat:10.7580,lng:106.6950},
+  "cau ong lanh":{lat:10.7640,lng:106.7040},"da kao":{lat:10.7870,lng:106.7010},
+  "nguyen cu trinh":{lat:10.7650,lng:106.6880},"nguyen thai binh":{lat:10.7710,lng:106.7020},
+  "pham ngu lao":{lat:10.7700,lng:106.6930},"tan dinh":{lat:10.7940,lng:106.6990},
+  "de tham":{lat:10.7670,lng:106.6950},"bui vien":{lat:10.7680,lng:106.6940},
+  // Phường cũ Quận 3
+  "vo thi sau":{lat:10.7870,lng:106.6870},"nguyen dinh chieu":{lat:10.7840,lng:106.6870},
+  "phuong 1 q3":{lat:10.7870,lng:106.6900},"phuong 2 q3":{lat:10.7860,lng:106.6880},
+  "phuong 3 q3":{lat:10.7850,lng:106.6870},"phuong 4 q3":{lat:10.7840,lng:106.6860},
+  "phuong 5 q3":{lat:10.7830,lng:106.6850},"phuong 6 q3":{lat:10.7820,lng:106.6840},
+  "phuong 7 q3":{lat:10.7810,lng:106.6830},"phuong 8 q3":{lat:10.7800,lng:106.6820},
+  "phuong 9 q3":{lat:10.7790,lng:106.6810},"phuong 10 q3":{lat:10.7780,lng:106.6800},
+  "phuong 11 q3":{lat:10.7770,lng:106.6790},"phuong 12 q3":{lat:10.7760,lng:106.6780},
+  "phuong 13 q3":{lat:10.7750,lng:106.6770},"phuong 14 q3":{lat:10.7740,lng:106.6760},
+  // Phường cũ Quận 4
+  "khanh hoi":{lat:10.7550,lng:106.7040},"xom chieu":{lat:10.7480,lng:106.7100},
+  "phuong 1 q4":{lat:10.7600,lng:106.7050},"phuong 2 q4":{lat:10.7580,lng:106.7060},
+  "phuong 3 q4":{lat:10.7560,lng:106.7070},"phuong 4 q4":{lat:10.7540,lng:106.7080},
+  "phuong 6 q4":{lat:10.7520,lng:106.7090},"phuong 8 q4":{lat:10.7500,lng:106.7100},
+  "phuong 9 q4":{lat:10.7490,lng:106.7110},"phuong 10 q4":{lat:10.7480,lng:106.7120},
+  "phuong 13 q4":{lat:10.7470,lng:106.7130},"phuong 14 q4":{lat:10.7460,lng:106.7140},
+  "phuong 15 q4":{lat:10.7450,lng:106.7150},"phuong 16 q4":{lat:10.7440,lng:106.7110},
+  "phuong 18 q4":{lat:10.7430,lng:106.7090},
+  // Phường cũ Quận 5
+  "cho lon":{lat:10.7540,lng:106.6620},"phu lam":{lat:10.7500,lng:106.6500},
+  "phuong 1 q5":{lat:10.7580,lng:106.6680},"phuong 2 q5":{lat:10.7570,lng:106.6670},
+  "phuong 3 q5":{lat:10.7560,lng:106.6660},"phuong 4 q5":{lat:10.7550,lng:106.6650},
+  "phuong 5 q5":{lat:10.7540,lng:106.6640},"phuong 6 q5":{lat:10.7530,lng:106.6630},
+  "phuong 7 q5":{lat:10.7520,lng:106.6620},"phuong 8 q5":{lat:10.7510,lng:106.6610},
+  "phuong 9 q5":{lat:10.7500,lng:106.6600},"phuong 10 q5":{lat:10.7490,lng:106.6590},
+  "phuong 11 q5":{lat:10.7480,lng:106.6580},"phuong 12 q5":{lat:10.7470,lng:106.6570},
+  "phuong 13 q5":{lat:10.7460,lng:106.6560},"phuong 14 q5":{lat:10.7450,lng:106.6550},
+  "phuong 15 q5":{lat:10.7440,lng:106.6540},
+  // Phường cũ Quận 10
+  "phuong 1 q10":{lat:10.7780,lng:106.6720},"phuong 2 q10":{lat:10.7770,lng:106.6710},
+  "phuong 3 q10":{lat:10.7760,lng:106.6700},"phuong 4 q10":{lat:10.7750,lng:106.6690},
+  "phuong 5 q10":{lat:10.7740,lng:106.6680},"phuong 6 q10":{lat:10.7730,lng:106.6670},
+  "phuong 7 q10":{lat:10.7720,lng:106.6660},"phuong 8 q10":{lat:10.7710,lng:106.6650},
+  "phuong 9 q10":{lat:10.7700,lng:106.6640},"phuong 10 q10":{lat:10.7690,lng:106.6630},
+  "phuong 11 q10":{lat:10.7680,lng:106.6620},"phuong 12 q10":{lat:10.7670,lng:106.6610},
+  "phuong 13 q10":{lat:10.7660,lng:106.6600},"phuong 14 q10":{lat:10.7650,lng:106.6590},
+  "phuong 15 q10":{lat:10.7640,lng:106.6580},
   // Quận 3 cũ → Quận 1 mới (vùng Quận 3 cũ)
   "quan 3":{lat:10.7840,lng:106.6850},"q3":{lat:10.7840,lng:106.6850},
   // Quận 4 cũ → Quận 1 mới (vùng Quận 4 cũ)
