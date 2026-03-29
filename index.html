@@ -240,7 +240,8 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
     <p>Bạn có thể xem menu và lên kế hoạch đặt hàng, nhưng chưa thể đặt lúc này.</p>
     <div class="open-time" id="closedOpenTime"></div>
     <div style="font-size:0.77rem;color:#aaa;margin-top:10px;">Liên hệ: <a href="tel:0356155524" style="color:var(--coffee)">0356155524</a></div>
-    <div style="font-size:0.7rem;color:#ccc;margin-top:16px;">Chủ quán: tap vào đây 5 lần để mở Admin</div>
+    <button onclick="document.getElementById('closedOverlay').style.display='none'" style="margin-top:18px;padding:8px 28px;background:#f0e6d3;color:#3b1f0e;border:none;border-radius:20px;font-size:0.9rem;cursor:pointer;">Xem menu</button>
+    <div style="font-size:0.7rem;color:#ccc;margin-top:12px;">Chủ quán: tap vào đây 5 lần để mở Admin</div>
   </div>
 </div>
 <div class="page active" id="page-menu">
@@ -1569,18 +1570,39 @@ goPage = function(id, step){
 
 // ── ADMIN SETTINGS ────────────────────────────────────────
 // Lưu vào localStorage (chỉ trên thiết bị này — dành cho chủ quán)
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwsDX9N-aKwFVvQ0Qy1iV9O2eqx-jcJK9wYAoJ5spiQ0CQOv8ZZVLi826IwFu_d8Zbo/exec';
+
 let adminSettings = {
   open: '07:00', close: '22:00', manual: 'auto',
   closedMsg: 'Hẹn gặp lại bạn vào ngày mai nhé! ☕',
-  sheetUrl: '',
+  sheetUrl: APPS_SCRIPT_URL,
   items: {}  // key -> {enabled:true, stock:-1}  (-1 = không giới hạn)
 };
 
-function loadAdminSettings(){
+async function loadAdminSettings(){
+  // 1. Load localStorage trước để hiển thị ngay
   try {
     const s = localStorage.getItem('rivAdminSettings');
     if(s) adminSettings = {...adminSettings, ...JSON.parse(s)};
   } catch(e){}
+  // 2. Đồng bộ từ Apps Script (nguồn thật)
+  try {
+    const res = await fetch(APPS_SCRIPT_URL + '?action=getSettings');
+    const json = await res.json();
+    if(json.status === 'ok' && json.settings && Object.keys(json.settings).length > 0){
+      const remote = json.settings;
+      if(remote.open)      adminSettings.open      = remote.open;
+      if(remote.close)     adminSettings.close     = remote.close;
+      if(remote.manual)    adminSettings.manual    = remote.manual;
+      if(remote.closedMsg) adminSettings.closedMsg = remote.closedMsg;
+      if(remote.items)     adminSettings.items     = JSON.parse(remote.items || '{}');
+      // Lưu lại localStorage để lần sau load nhanh hơn
+      try{ localStorage.setItem('rivAdminSettings', JSON.stringify(adminSettings)); } catch(e){}
+      // Cập nhật lại trạng thái quán sau khi có data mới
+      checkStoreHours();
+      buildMenu();
+    }
+  } catch(e){ console.log('Sync settings error:', e); }
 }
 
 function saveAdminSettings(){
@@ -1601,6 +1623,23 @@ function saveAdminSettings(){
     adminSettings.items[k].stock = parseInt(inp.value) ?? -1;
   });
   try{ localStorage.setItem('rivAdminSettings', JSON.stringify(adminSettings)); } catch(e){}
+  // Đồng bộ lên Apps Script
+  const syncData = {
+    action: 'saveSettings',
+    settings: {
+      open:      adminSettings.open,
+      close:     adminSettings.close,
+      manual:    adminSettings.manual,
+      closedMsg: adminSettings.closedMsg,
+      items:     JSON.stringify(adminSettings.items)
+    }
+  };
+  fetch(APPS_SCRIPT_URL, {
+    method: 'POST', mode: 'no-cors',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(syncData)
+  }).catch(e => console.log('Sync error:', e));
+  showToast('✅ Đã lưu & đồng bộ settings!');
 }
 
 function isItemAvailable(key){
@@ -1722,10 +1761,8 @@ function exitAdmin(){
 }
 
 // ── GOOGLE SHEETS SUBMIT ──────────────────────────────────
-// ── GỬI ĐƠN HÀNG QUA GOOGLE APPS SCRIPT (Sheets + Email) ──
 async function submitToGoogleSheets(orderData){
-  const url = adminSettings.sheetUrl;
-  if(!url || !url.startsWith('https://script.google.com')) return;
+  const url = APPS_SCRIPT_URL;
   try {
     await fetch(url, {
       method: 'POST',
