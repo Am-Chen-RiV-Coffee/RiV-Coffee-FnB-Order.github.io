@@ -1616,24 +1616,38 @@ function showUploadProof(){
 function handleProofUpload(event){
   const file = event.target.files[0];
   if(!file) return;
-  if(file.size > 10*1024*1024){
-    showToast('⚠️ Ảnh quá lớn, vui lòng chọn ảnh dưới 10MB');
+  if(file.size > 15*1024*1024){
+    showToast('⚠️ Ảnh quá lớn, vui lòng chọn ảnh dưới 15MB');
     return;
   }
   const reader = new FileReader();
   reader.onload = function(e){
-    proofImageData = e.target.result;
-    document.getElementById('proofPreview').src = proofImageData;
-    document.getElementById('proofPreviewWrap').style.display='block';
-    document.getElementById('proofFileName').textContent = file.name + ' (' + (file.size/1024).toFixed(1) + ' KB)';
-    document.getElementById('uploadArea').style.display='none';
-    document.getElementById('proofErr').style.display='none';
-    const btn = document.getElementById('btnConfirmOrder');
-    btn.disabled = false;
-    btn.style.opacity = '1';
-    btn.style.cursor = 'pointer';
-    btn.setAttribute('onclick','confirmOrder()');
-    showToast('✅ Đã chọn ảnh biên lai!');
+    // Nén ảnh xuống tối đa 800px và quality 0.7 để giảm kích thước gửi lên server
+    const img = new Image();
+    img.onload = function(){
+      const MAX = 800;
+      let w = img.width, h = img.height;
+      if(w > MAX || h > MAX){
+        if(w > h){ h = Math.round(h * MAX/w); w = MAX; }
+        else      { w = Math.round(w * MAX/h); h = MAX; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      proofImageData = canvas.toDataURL('image/jpeg', 0.75);
+      document.getElementById('proofPreview').src = proofImageData;
+      document.getElementById('proofPreviewWrap').style.display='block';
+      const kb = Math.round(proofImageData.length * 0.75 / 1024);
+      document.getElementById('proofFileName').textContent = file.name + ' (đã nén: ~' + kb + ' KB)';
+      document.getElementById('uploadArea').style.display='none';
+      document.getElementById('proofErr').style.display='none';
+      const btn = document.getElementById('btnConfirmOrder');
+      btn.disabled = false; btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+      btn.setAttribute('onclick','confirmOrder()');
+      showToast('✅ Đã chọn ảnh biên lai!');
+    };
+    img.src = e.target.result;
   };
   reader.readAsDataURL(file);
 }
@@ -1904,88 +1918,35 @@ function exitAdmin(){
 // ── GOOGLE SHEETS SUBMIT ──────────────────────────────────
 async function submitToGoogleSheets(orderData){
   const url = APPS_SCRIPT_URL;
-  const proofImage = orderData.proof_image || '';
+  // Ảnh đã nén bằng Canvas trong handleProofUpload (~100-300KB)
+  const body = JSON.stringify(orderData);
+  console.log('📦 proof_image length:', (orderData.proof_image||'').length);
 
-  // Gửi toàn bộ data kể cả ảnh (nếu ảnh < 3MB)
-  // Nếu ảnh quá lớn → gửi 2 lần: lần 1 không ảnh, lần 2 chỉ ảnh
-  const MAX_SIZE = 3 * 1024 * 1024; // 3MB tính theo ký tự base64
-  const imageFits = proofImage.length < MAX_SIZE;
-
-  const payload = Object.assign({}, orderData, {
-    proof_image: imageFits ? proofImage : ''
-  });
-
-  // === Gửi đơn hàng (có ảnh nếu vừa, không có ảnh nếu quá lớn) ===
-  const body = JSON.stringify(payload);
-  let sent = false;
-
-  // Thử 1: fetch POST thường
+  // Thử 1: POST thường
   try {
     const resp = await fetch(url, {
-      method:  'POST',
+      method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body:    body
+      body: body
     });
-    await resp.text();
-    console.log('✅ Order sent (POST)');
-    sent = true;
+    const text = await resp.text();
+    console.log('✅ Order sent (POST):', text);
+    return;
   } catch(e1) {
-    console.warn('POST thất bại, thử no-cors:', e1.message);
+    console.warn('POST thất bại:', e1.message);
   }
 
   // Thử 2: no-cors
-  if (!sent) {
-    try {
-      await fetch(url, {
-        method:  'POST',
-        mode:    'no-cors',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body:    body
-      });
-      console.log('✅ Order sent (no-cors)');
-      sent = true;
-    } catch(e2) {
-      console.warn('no-cors thất bại:', e2.message);
-    }
-  }
-
-  // Thử 3: GET fallback (không có ảnh — URL quá dài sẽ bị chặn)
-  if (!sent) {
-    try {
-      const compact = {
-        ref: payload.ref, name: payload.name, phone: payload.phone,
-        address: payload.address, note: payload.note || '',
-        items: payload.items, items_text: payload.items_text,
-        subtotal: payload.subtotal, ship_fee: payload.ship_fee, total: payload.total,
-        ship_km: payload.ship_km, payment: payload.payment,
-        subtotal_fmt: payload.subtotal_fmt, ship_fee_fmt: payload.ship_fee_fmt,
-        total_fmt: payload.total_fmt, order_nd: payload.order_nd,
-        order_time: payload.order_time, timestamp: payload.timestamp,
-        send_email: true, proof_image: ''
-      };
-      new Image().src = url + '?data=' + encodeURIComponent(JSON.stringify(compact));
-      console.log('✅ Order sent (GET fallback, no image)');
-    } catch(e3) {}
-  }
-
-  // === Nếu ảnh quá lớn → gửi ảnh riêng sau khi đơn đã được ghi ===
-  if (!imageFits && proofImage) {
-    setTimeout(async () => {
-      try {
-        const imgPayload = JSON.stringify({
-          action: 'attachProof',
-          ref:    orderData.ref,
-          proof_image: proofImage
-        });
-        await fetch(url, {
-          method:  'POST',
-          mode:    'no-cors',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body:    imgPayload
-        });
-        console.log('✅ Proof image sent separately');
-      } catch(e) {}
-    }, 2000);
+  try {
+    await fetch(url, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: body
+    });
+    console.log('✅ Order sent (no-cors)');
+  } catch(e2) {
+    console.warn('no-cors thất bại:', e2.message);
   }
 }
 
