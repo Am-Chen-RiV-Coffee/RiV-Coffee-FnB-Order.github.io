@@ -832,9 +832,9 @@ function buildMenu(){
 
     let optHtml = `<div class="item-options${qty > 0 ? ' visible' : ''}" id="opts-${id}">`;
     if(hasOpts){
-      ['sugar','ice'].forEach(ok => {
+      Object.keys(OPTS).forEach(ok => {
         const o = OPTS[ok];
-        const sel = e ? e[ok] : o.c[0];
+        const sel = e ? (e[ok] || o.c[0]) : o.c[0];
         optHtml += `<div class="opt-row"><span class="opt-label">${o.label}:</span><div class="opt-chips">`;
         o.c.forEach(c => {
           optHtml += `<button class="opt-chip${sel===c?' selected':''}" onclick="setOpt('${key}','${ok}','${c}',this)">${c}</button>`;
@@ -861,11 +861,11 @@ function buildMenu(){
 
 function chg(key, idx, d){
   const item = MENU[curCat][idx];
-  if(!cart[key]) cart[key] = {
-    name:item.n, price:item.p, qty:0,
-    sugar:OPTS.sugar.c[0], ice:OPTS.ice.c[0],
-    note:'', cat:curCat, hasOpts:!item.x
-  };
+  if(!cart[key]) {
+    const defaults = {};
+    Object.keys(OPTS).forEach(function(ok){ defaults[ok] = OPTS[ok].c[0]; });
+    cart[key] = Object.assign({name:item.n, price:item.p, qty:0, note:'', cat:curCat, hasOpts:!item.x}, defaults);
+  }
   // Kiểm tra tồn kho nếu đang tăng số lượng
   if(d > 0){
     const s = adminSettings.items[key];
@@ -1603,7 +1603,7 @@ async function goPayment(){
   let html=`<div style="font-family:'Playfair Display',serif;font-size:0.93rem;margin-bottom:8px;color:var(--coffee)">Tóm tắt đơn hàng</div>`;
   items.forEach(i=>{
     const opts=[];
-    if(i.hasOpts){if(i.sugar)opts.push(i.sugar+' đường');if(i.ice)opts.push(i.ice+' đá');}
+    if(i.hasOpts){ Object.keys(OPTS).forEach(ok=>{ if(i[ok] && i[ok]!==OPTS[ok].c[0]) opts.push(i[ok]); }); }
     const os=opts.length?` <span style="font-size:0.71rem;color:#aaa">(${opts.join(', ')})</span>`:'';
     html+=`<div class="summary-row"><span style="flex:1">${i.qty}x ${i.name}${os}</span><span style="white-space:nowrap">${fmt(i.qty*i.price)}</span></div>`;
     if(i.note)html+=`<div style="font-size:0.71rem;color:#888;padding-left:11px;margin-bottom:3px">📝 ${i.note}</div>`;
@@ -1645,7 +1645,7 @@ function confirmOrder(){
   let iH='';
   items.forEach(i=>{
     const opts=[];
-    if(i.hasOpts){if(i.sugar)opts.push(i.sugar+' đường');if(i.ice)opts.push(i.ice+' đá');}
+    if(i.hasOpts){ Object.keys(OPTS).forEach(function(ok){ if(i[ok] && i[ok]!==OPTS[ok].c[0]) opts.push(OPTS[ok].label+': '+i[ok]); }); }
     const os=opts.length?` (${opts.join(', ')})`:'';
     iH+=`<div class="receipt-row"><span style="flex:1">${i.qty}x ${i.name}${os}</span><span>${fmt(i.qty*i.price)}</span></div>`;
     if(i.note)iH+=`<div style="font-size:0.71rem;color:#888;padding-left:8px;margin-bottom:3px">📝 ${i.note}</div>`;
@@ -1684,7 +1684,7 @@ function buildMsg(items,ts){
   let m=`🧾 ĐƠN HÀNG – RiV Coffee FnB\n━━━━━━━━━━━━━━━\n📌 Mã: ${orderInfo.ref} | 🕐 ${ts}\n━━━━━━━━━━━━━━━\n📋 MÓN:\n`;
   items.forEach(i=>{
     const opts=[];
-    if(i.hasOpts){if(i.sugar)opts.push(i.sugar+' đường');if(i.ice)opts.push(i.ice+' đá');}
+    if(i.hasOpts){ Object.keys(OPTS).forEach(function(ok){ if(i[ok] && i[ok]!==OPTS[ok].c[0]) opts.push(OPTS[ok].label+': '+i[ok]); }); }
     m+=`• ${i.qty}x ${i.name}${opts.length?' ('+opts.join(', ')+')':''} – ${fmt(i.qty*i.price)}\n`;
     if(i.note)m+=`   📝 ${i.note}\n`;
   });
@@ -1820,7 +1820,7 @@ goPage = function(id, step){
 
 // ── ADMIN SETTINGS ────────────────────────────────────────
 // Lưu vào localStorage (chỉ trên thiết bị này — dành cho chủ quán)
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyB33GJNBDhOV0T7CescEBzzND31_6fGaIIRbJuhRaUitxx0TkDCnvWloz6yt1Gx5yzGw/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzTkyYGI5Cq1Ij_dUoVyKt8Jt3AFC7z8-CeEKTV6u27HYjMIs1XZlGUV_QMibPNs2TJnQ/exec';
 
 let adminSettings = {
   open: '07:00', close: '22:00', manual: 'auto',
@@ -2086,14 +2086,14 @@ confirmOrder = function(){
   let itemsText = '';
   items.forEach(i=>{
     const opts=[];
-    if(i.hasOpts){if(i.sugar)opts.push(i.sugar+' đường');if(i.ice)opts.push(i.ice+' đá');}
+    if(i.hasOpts){ Object.keys(OPTS).forEach(function(ok){ if(i[ok] && i[ok]!==OPTS[ok].c[0]) opts.push(OPTS[ok].label+': '+i[ok]); }); }
     itemsText += `• ${i.qty}x ${i.name}${opts.length?' ('+opts.join(', ')+')':''} — ${fmt(i.qty*i.price)}\n`;
     if(i.note) itemsText += `   📝 ${i.note}\n`;
   });
   // Build items string cho Sheets
   const itemsStr = items.map(i=>{
     const opts=[];
-    if(i.hasOpts){if(i.sugar)opts.push(i.sugar+' đường');if(i.ice)opts.push(i.ice+' đá');}
+    if(i.hasOpts){ Object.keys(OPTS).forEach(function(ok){ if(i[ok] && i[ok]!==OPTS[ok].c[0]) opts.push(OPTS[ok].label+': '+i[ok]); }); }
     return `${i.qty}x ${i.name}${opts.length?' ('+opts.join(', ')+')':''}`;
   }).join(' | ');
 
