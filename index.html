@@ -1932,7 +1932,7 @@ goPage = function(id, step){
 
 // ── ADMIN SETTINGS ────────────────────────────────────────
 // Lưu vào localStorage (chỉ trên thiết bị này — dành cho chủ quán)
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwtAcJZStnJ3aWDuVHAs69Gt6_9aNGlPEMzM1c6g7bQW0aZuTzeDsO7UMdzPI1BZtDH-Q/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxCCS-lbuoSYm39quHTsy5MeBb1yPMGtYJqSVpQpst0qctbq6mkcBprv1h77NzTRQ1YYQ/exec';
 
 let adminSettings = {
   open: '07:00', close: '22:00', manual: 'auto',
@@ -2691,7 +2691,7 @@ function optsEditorAddGroup() {
   const key = 'opt_' + Date.now();
   const label = prompt('Tên nhóm tùy chọn mới (VD: Topping, Size...):');
   if(!label||!label.trim()) return;
-  optsEditorData.push({key:key, label:label.trim(), choices:['Lựa chọn 1']});
+  optsEditorData.push({key:key, label:label.trim(), multi:false, max:1, choices:[{name:'Lựa chọn 1', price:0}]});
   renderOptsEditor();
 }
 
