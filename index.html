@@ -215,15 +215,17 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
 </head>
 <body>
 <script>
-// Phát hiện trình duyệt in-app và hướng dẫn mở Chrome/Safari
+// Phát hiện in-app browser → bắt buộc mở Chrome/Safari
+// KHÔNG có nút "Vẫn thử" vì fetch bị chặn hoàn toàn trong Zalo/FB/Messenger
 (function(){
   const ua = navigator.userAgent;
-  const isZalo    = /ZaloApp|zalo/i.test(ua);
-  const isFBApp   = /FBAN|FBAV|FB_IAB/i.test(ua);
-  const isMsg     = /Messenger|MessengerLiteForiOS/i.test(ua);
-  const isWA      = /WhatsApp/i.test(ua);
-  const isLine    = /Line\//i.test(ua);
-  const isInApp   = isZalo || isFBApp || isMsg || isWA || isLine;
+  const isZalo = /ZaloApp|ZaloBrowser|zalo/i.test(ua);
+  const isFB   = /FBAN|FBAV|FB_IAB|FBIOS|FBSS/i.test(ua);
+  const isMsg  = /Messenger|MessengerLiteForiOS/i.test(ua);
+  const isWA   = /WhatsApp/i.test(ua);
+  const isLine = /Line\//.test(ua);
+  const isTikTok = /musical_ly|TikTok/i.test(ua);
+  const isInApp = isZalo || isFB || isMsg || isWA || isLine || isTikTok;
 
   if(!isInApp) return;
 
@@ -231,42 +233,99 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
   const isAndroid = /Android/i.test(ua);
   const isIOS     = /iPhone|iPad|iPod/i.test(ua);
 
+  // Android: thử redirect sang Chrome intent ngay
   if(isAndroid){
-    // Thử mở Chrome bằng intent (hoạt động tốt trên Android 6+)
-    window.location.href = 'intent://' + url.replace(/^https?:\/\//, '')
-      + '#Intent;scheme=https;package=com.android.chrome;end';
-  } else if(isIOS){
-    // Thử mở Chrome trước
-    const chromeUrl = url.replace(/^https/, 'googlechromes').replace(/^http/, 'googlechrome');
-    window.location.href = chromeUrl;
-    // Nếu Chrome không cài → hiện hướng dẫn sau 1.5s
-    setTimeout(showGuide, 1500);
-  } else {
-    showGuide();
+    window.location.replace(
+      'intent://' + url.replace(/^https?:\/\//, '') +
+      '#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=' +
+      encodeURIComponent(url) + ';end'
+    );
+  }
+  // iOS: thử mở Chrome, nếu không có thì hiện popup
+  if(isIOS){
+    const t = setTimeout(showPopup, 1200);
+    window.location.href = url.replace(/^https/, 'googlechromes').replace(/^http(?!s)/, 'googlechrome');
+    window.addEventListener('blur', function(){ clearTimeout(t); });
   }
 
-  function showGuide(){
+  // Luôn hiện popup (Android: hiện song song để backup nếu intent thất bại)
+  showPopup();
+
+  function showPopup(){
+    // Nếu đã hiện rồi thì không hiện lại
+    if(document.getElementById('inapp-blocker')) return;
+
+    const appName = isZalo ? 'Zalo' : isFB ? 'Facebook' : isMsg ? 'Messenger' : isWA ? 'WhatsApp' : 'ứng dụng này';
+    const androidTip = isAndroid
+      ? '👉 Nhấn <b>⋮</b> (3 chấm) góc trên phải<br>→ chọn <b>"Mở trong Chrome"</b> hoặc <b>"Mở bằng trình duyệt"</b>'
+      : '👉 Nhấn <b>···</b> hoặc biểu tượng Safari<br>→ chọn <b>"Mở trong Safari"</b> hoặc <b>"Mở trong Chrome"</b>';
+
+    const wrap = document.createElement('div');
+    wrap.id = 'inapp-blocker';
+    wrap.style.cssText = [
+      'position:fixed','inset:0','z-index:2147483647',
+      'background:rgba(20,10,5,0.97)',
+      'display:flex','align-items:center','justify-content:center','padding:20px',
+      'font-family:Arial,sans-serif'
+    ].join(';');
+
+    wrap.innerHTML = `
+      <div style="background:#fff;border-radius:18px;padding:28px 22px;max-width:360px;width:100%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.4)">
+        <div style="font-size:3rem;margin-bottom:8px">🌐</div>
+        <h2 style="color:#3b1f0e;margin:0 0 10px;font-size:1.15rem;font-weight:800">
+          Vui lòng mở bằng Chrome / Safari
+        </h2>
+        <div style="background:#fff3cd;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:0.82rem;color:#7a5000;line-height:1.6;text-align:left">
+          ⚠️ <b>${appName}</b> không cho phép gửi đơn hàng.<br>
+          Bạn cần mở trang này bằng <b>Chrome</b> hoặc <b>Safari</b>.
+        </div>
+        <div style="background:#f5f5f5;border-radius:10px;padding:12px 14px;margin-bottom:18px;font-size:0.84rem;color:#333;line-height:1.8;text-align:left">
+          ${androidTip}
+        </div>
+        <button id="inapp-copy-btn"
+          style="display:block;width:100%;background:#3b1f0e;color:#e8b94a;border:none;border-radius:12px;padding:14px;font-weight:800;font-size:1rem;cursor:pointer;margin-bottom:0;letter-spacing:0.3px">
+          📋 Copy link → dán vào Chrome
+        </button>
+      </div>`;
+
     document.addEventListener('DOMContentLoaded', function(){
-      const d = document.createElement('div');
-      d.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px';
-      d.innerHTML =
-        '<div style="background:#fff;border-radius:16px;padding:28px 22px;max-width:360px;width:100%;text-align:center">'
-        + '<div style="font-size:2.8rem;margin-bottom:10px">⚠️</div>'
-        + '<h2 style="font-family:serif;color:#3b1f0e;margin:0 0 10px;font-size:1.2rem">Mở bằng Chrome để đặt hàng</h2>'
-        + '<p style="font-size:0.87rem;color:#555;line-height:1.65;margin:0 0 6px">'
-        + 'Trình duyệt trong ứng dụng <b>không hỗ trợ</b> đặt hàng.</p>'
-        + '<p style="font-size:0.82rem;color:#777;line-height:1.7;margin:0 0 18px">'
-        + '📱 <b>Android:</b> Nhấn <b>⋮</b> → "Mở trong Chrome"<br>'
-        + '🍎 <b>iOS:</b> Nhấn <b>···</b> → "Mở trong Safari" / "Mở trong Chrome"</p>'
-        + '<button onclick="(navigator.clipboard?navigator.clipboard.writeText(\'' + url.replace(/'/g,"\\'") + '\').then(function(){this.textContent=\'✅ Đã copy link!\'},this):0)"'
-        + ' style="display:block;width:100%;background:#3b1f0e;color:#e8b94a;border:none;border-radius:10px;padding:12px;font-weight:700;font-size:0.95rem;margin-bottom:10px;cursor:pointer">'
-        + '📋 Copy link để dán vào Chrome</button>'
-        + '<button onclick="this.closest(\'[style]\').remove()"'
-        + ' style="background:none;border:1px solid #ccc;border-radius:10px;padding:10px;width:100%;font-size:0.84rem;color:#888;cursor:pointer">'
-        + 'Vẫn thử (có thể bị lỗi)</button>'
-        + '</div>';
-      document.body.appendChild(d);
-    });
+      document.body.appendChild(wrap);
+      document.getElementById('inapp-copy-btn').addEventListener('click', function(){
+        const btn = this;
+        if(navigator.clipboard && navigator.clipboard.writeText){
+          navigator.clipboard.writeText(url).then(function(){
+            btn.textContent = '✅ Đã copy! Mở Chrome và dán vào thanh địa chỉ';
+            btn.style.background = '#2d6a2d';
+          }).catch(fallbackCopy);
+        } else {
+          fallbackCopy();
+        }
+        function fallbackCopy(){
+          const ta = document.createElement('textarea');
+          ta.value = url;
+          ta.style.cssText = 'position:fixed;opacity:0';
+          document.body.appendChild(ta);
+          ta.focus(); ta.select();
+          try{ document.execCommand('copy'); btn.textContent = '✅ Đã copy! Dán vào Chrome'; btn.style.background='#2d6a2d'; }
+          catch(e){ btn.textContent = url; btn.style.fontSize='0.65rem'; }
+          document.body.removeChild(ta);
+        }
+      });
+    }, {once: true});
+
+    // Nếu DOM đã sẵn sàng thì thêm ngay
+    if(document.readyState !== 'loading'){
+      if(!document.getElementById('inapp-blocker')){
+        document.body ? document.body.appendChild(wrap) : document.addEventListener('DOMContentLoaded', function(){ document.body.appendChild(wrap); });
+        const btn = document.getElementById('inapp-copy-btn');
+        if(btn) btn.addEventListener('click', function(){
+          const b = this;
+          if(navigator.clipboard && navigator.clipboard.writeText){
+            navigator.clipboard.writeText(url).then(function(){ b.textContent='✅ Đã copy! Mở Chrome và dán vào thanh địa chỉ'; b.style.background='#2d6a2d'; });
+          }
+        });
+      }
+    }
   }
 })();
 </script>
@@ -530,52 +589,115 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
 
 <!-- ADMIN PAGE -->
 <div class="admin-page" id="page-admin">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+  <!-- Header + tab switcher -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
     <div style="font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--brown)">⚙️ Quản lý quán</div>
     <button class="btn-back" onclick="exitAdmin()">← Thoát</button>
   </div>
-  <div class="admin-section">
-    <h3>🕐 Thời gian hoạt động</h3>
-    <div style="font-size:0.78rem;color:#888;margin-bottom:10px;">Ngoài thời gian này khách chỉ xem menu, không đặt được</div>
-    <div class="admin-row">
-      <span class="admin-item-name">Mở cửa</span>
-      <input type="time" class="time-input" id="adminOpen" value="07:00" onchange="saveAdminSettings()">
-    </div>
-    <div class="admin-row">
-      <span class="admin-item-name">Đóng cửa</span>
-      <input type="time" class="time-input" id="adminClose" value="22:00" onchange="saveAdminSettings()">
-    </div>
-    <div class="admin-row">
-      <span class="admin-item-name">Trạng thái thủ công</span>
-      <div class="admin-controls">
+
+  <!-- Tab bar -->
+  <div style="display:flex;gap:6px;margin-bottom:14px;background:#f5e9d6;border-radius:10px;padding:4px;">
+    <button id="adminTab1" onclick="switchAdminTab(1)"
+      style="flex:1;padding:8px 4px;border:none;border-radius:8px;font-size:0.82rem;font-weight:600;cursor:pointer;background:var(--coffee);color:#fdf6ee;font-family:'DM Sans',sans-serif;">
+      ⚙️ Cài đặt
+    </button>
+    <button id="adminTab2" onclick="switchAdminTab(2)"
+      style="flex:1;padding:8px 4px;border:none;border-radius:8px;font-size:0.82rem;font-weight:600;cursor:pointer;background:transparent;color:var(--coffee);font-family:'DM Sans',sans-serif;">
+      🍽️ Menu
+    </button>
+    <button id="adminTab3" onclick="switchAdminTab(3)"
+      style="flex:1;padding:8px 4px;border:none;border-radius:8px;font-size:0.82rem;font-weight:600;cursor:pointer;background:transparent;color:var(--coffee);font-family:'DM Sans',sans-serif;">
+      🎛️ Tùy chọn
+    </button>
+  </div>
+
+  <!-- TAB 1: Cài đặt -->
+  <div id="adminTabContent1">
+    <div class="admin-section">
+      <h3>🕐 Thời gian hoạt động</h3>
+      <div style="font-size:0.78rem;color:#888;margin-bottom:10px;">Ngoài thời gian này khách chỉ xem menu, không đặt được</div>
+      <div class="admin-row">
+        <span class="admin-item-name">Mở cửa</span>
+        <input type="time" class="time-input" id="adminOpen" value="07:00" onchange="saveAdminSettings()">
+      </div>
+      <div class="admin-row">
+        <span class="admin-item-name">Đóng cửa</span>
+        <input type="time" class="time-input" id="adminClose" value="22:00" onchange="saveAdminSettings()">
+      </div>
+      <div class="admin-row">
+        <span class="admin-item-name">Trạng thái thủ công</span>
         <select id="adminManualStatus" style="padding:4px 8px;border-radius:6px;border:1.5px solid var(--sand);font-family:'DM Sans',sans-serif;font-size:0.78rem;" onchange="saveAdminSettings()">
           <option value="auto">Tự động (theo giờ)</option>
           <option value="open">Luôn mở</option>
           <option value="closed">Luôn đóng</option>
         </select>
       </div>
+      <div class="admin-row" style="flex-wrap:wrap;gap:5px">
+        <span class="admin-item-name">Thông báo đóng cửa</span>
+        <input type="text" id="adminClosedMsg" value="Hẹn gặp lại bạn vào ngày mai nhé! ☕"
+          style="flex:1;min-width:160px;padding:5px 9px;border-radius:6px;border:1.5px solid var(--sand);font-size:0.79rem;font-family:'DM Sans',sans-serif;"
+          onchange="saveAdminSettings()">
+      </div>
     </div>
-    <div class="admin-row" style="flex-wrap:wrap;gap:5px">
-      <span class="admin-item-name">Thông báo đóng cửa</span>
-      <input type="text" id="adminClosedMsg" value="Hẹn gặp lại bạn vào ngày mai nhé! ☕"
-        style="flex:1;min-width:160px;padding:5px 9px;border-radius:6px;border:1.5px solid var(--sand);font-size:0.79rem;font-family:'DM Sans',sans-serif;"
-        onchange="saveAdminSettings()">
+    <div class="admin-section">
+      <h3>📊 Kết nối Google Sheets</h3>
+      <div style="background:#e8f4e8;border-radius:7px;padding:10px 12px;font-size:0.79rem;color:#2d6a2d;font-weight:600;">
+        ✅ Đã kết nối: Google Sheets &amp; Email tự động
+      </div>
+      <div style="font-size:0.7rem;color:#aaa;margin-top:6px;word-break:break-all;">AKfycbzTkyYGI5Cq1Ij_dUoVyKt8Jt3AFC7z8-CeEKTV6u27HYjMIs1XZlGUV_QMibPNs2TJnQ</div>
+    </div>
+    <div class="admin-section" id="adminMenuSection">
+      <h3>🍽️ Bật/Tắt món &amp; Tồn kho</h3>
+      <div style="font-size:0.78rem;color:#888;margin-bottom:10px;">Tắt = ẩn khỏi menu khách • Tồn kho 0 = hết hàng (ẩn)</div>
+      <div id="adminItemList"></div>
+    </div>
+    <button class="btn-primary" onclick="saveAdminSettings();showToast('✅ Đã lưu cài đặt')">💾 Lưu cài đặt</button>
+  </div>
+
+  <!-- TAB 2: Menu Editor -->
+  <div id="adminTabContent2" style="display:none">
+    <div class="admin-section" style="padding:10px">
+      <!-- Toolbar -->
+      <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
+        <button onclick="menuEditorAddItem()" style="flex:1;min-width:100px;padding:8px;background:var(--green);color:#fff;border:none;border-radius:8px;font-weight:600;font-size:0.82rem;cursor:pointer;">
+          ➕ Thêm món
+        </button>
+        <button onclick="menuEditorAddCategory()" style="flex:1;min-width:100px;padding:8px;background:#e8b94a;color:#3b1f0e;border:none;border-radius:8px;font-weight:600;font-size:0.82rem;cursor:pointer;">
+          📁 Thêm danh mục
+        </button>
+        <button onclick="saveMenuToServer()" style="flex:1;min-width:100px;padding:8px;background:var(--coffee);color:#fdf6ee;border:none;border-radius:8px;font-weight:700;font-size:0.82rem;cursor:pointer;">
+          💾 Lưu menu
+        </button>
+      </div>
+
+      <!-- Loading state -->
+      <div id="menuEditorLoading" style="text-align:center;padding:30px;color:#aaa;font-size:0.85rem;">
+        ⏳ Đang tải menu...
+      </div>
+
+      <!-- Menu list -->
+      <div id="menuEditorList" style="display:none"></div>
     </div>
   </div>
-  <div class="admin-section">
-    <h3>📊 Kết nối Google Sheets</h3>
-    <div style="font-size:0.78rem;color:#888;margin-bottom:8px;">URL Apps Script đã được nhúng cố định trong ứng dụng — đồng bộ tự động trên mọi thiết bị</div>
-    <div style="background:#e8f4e8;border-radius:7px;padding:10px 12px;font-size:0.79rem;color:#2d6a2d;font-weight:600;">
-      ✅ Đã kết nối: Google Sheets &amp; Email tự động
+
+  <!-- TAB 3: Tùy chọn (đường/đá/topping) -->
+  <div id="adminTabContent3" style="display:none">
+    <div class="admin-section">
+      <h3>🎛️ Tùy chọn đường / đá / topping</h3>
+      <div style="font-size:0.78rem;color:#888;margin-bottom:12px;">
+        Các lựa chọn này hiển thị khi khách chọn món có tùy chọn
+      </div>
+      <div id="optsEditorList"></div>
+      <div style="display:flex;gap:6px;margin-top:10px;">
+        <button onclick="optsEditorAddGroup()" style="flex:1;padding:9px;background:#e8b94a;color:#3b1f0e;border:none;border-radius:8px;font-weight:600;font-size:0.82rem;cursor:pointer;">
+          ➕ Thêm nhóm tùy chọn
+        </button>
+        <button onclick="saveOptsToServer()" style="flex:1;padding:9px;background:var(--coffee);color:#fdf6ee;border:none;border-radius:8px;font-weight:700;font-size:0.82rem;cursor:pointer;">
+          💾 Lưu tùy chọn
+        </button>
+      </div>
     </div>
-    <div style="font-size:0.7rem;color:#aaa;margin-top:6px;word-break:break-all;">AKfycbzTkyYGI5Cq1Ij_dUoVyKt8Jt3AFC7z8-CeEKTV6u27HYjMIs1XZlGUV_QMibPNs2TJnQ</div>
   </div>
-  <div class="admin-section" id="adminMenuSection">
-    <h3>🍽️ Bật/Tắt món &amp; Tồn kho</h3>
-    <div style="font-size:0.78rem;color:#888;margin-bottom:10px;">Tắt = ẩn khỏi menu khách • Tồn kho 0 = hết hàng (ẩn)</div>
-    <div id="adminItemList"></div>
-  </div>
-  <button class="btn-primary" onclick="saveAdminSettings();showToast('✅ Đã lưu cài đặt')">💾 Lưu tất cả</button>
 </div>
 
 <!-- CART BAR -->
@@ -1698,7 +1820,7 @@ goPage = function(id, step){
 
 // ── ADMIN SETTINGS ────────────────────────────────────────
 // Lưu vào localStorage (chỉ trên thiết bị này — dành cho chủ quán)
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby2RsETcwiwBAONZJ6wAK-IdiEU5pZZ00-OmoDmSEagEoiZxwU8VCU5AmuxC2QSDHxQ/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyB33GJNBDhOV0T7CescEBzzND31_6fGaIIRbJuhRaUitxx0TkDCnvWloz6yt1Gx5yzGw/exec';
 
 let adminSettings = {
   open: '07:00', close: '22:00', manual: 'auto',
@@ -2026,6 +2148,358 @@ buildMenu = function(){
   });
 };
 
+
+// ══════════════════════════════════════════════════════════════
+// ADMIN TAB SWITCHER
+// ══════════════════════════════════════════════════════════════
+function switchAdminTab(n) {
+  [1,2,3].forEach(function(i){
+    const btn = document.getElementById('adminTab'+i);
+    const pane = document.getElementById('adminTabContent'+i);
+    if(i===n){
+      btn.style.background='var(--coffee)'; btn.style.color='#fdf6ee';
+      pane.style.display='block';
+    } else {
+      btn.style.background='transparent'; btn.style.color='var(--coffee)';
+      pane.style.display='none';
+    }
+  });
+  if(n===2 && !menuEditorLoaded) loadMenuEditor();
+  if(n===3 && !optsEditorLoaded) loadOptsEditor();
+}
+
+// ══════════════════════════════════════════════════════════════
+// MENU EDITOR
+// ══════════════════════════════════════════════════════════════
+let menuEditorData = [];   // [{category,name,price,no_options,enabled,sort_order}]
+let menuEditorLoaded = false;
+
+async function loadMenuEditor() {
+  document.getElementById('menuEditorLoading').style.display='block';
+  document.getElementById('menuEditorList').style.display='none';
+  try {
+    const resp = await fetch(APPS_SCRIPT_URL + '?action=getMenuRaw');
+    const json = await resp.json();
+    if(json.status==='ok') {
+      menuEditorData = json.items || [];
+      menuEditorLoaded = true;
+      renderMenuEditor();
+    }
+  } catch(e) {
+    document.getElementById('menuEditorLoading').textContent = '❌ Không tải được menu. Kiểm tra kết nối.';
+  }
+}
+
+function renderMenuEditor() {
+  document.getElementById('menuEditorLoading').style.display='none';
+  const list = document.getElementById('menuEditorList');
+  list.style.display='block';
+
+  // Nhóm theo category
+  const cats = [];
+  const bycat = {};
+  menuEditorData.forEach(function(item, idx){
+    item._idx = idx;
+    if(!bycat[item.category]){ bycat[item.category]=[]; cats.push(item.category); }
+    bycat[item.category].push(item);
+  });
+
+  let html = '';
+  cats.forEach(function(cat){
+    html += `<div class="menu-cat-block" data-cat="${esc2(cat)}" style="margin-bottom:14px;">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+        <span style="flex:1;font-weight:700;color:var(--brown);font-size:0.88rem">📁 ${esc2(cat)}</span>
+        <button onclick="menuEditorRenameCategory('${esc2(cat)}')"
+          style="padding:3px 8px;font-size:0.72rem;border:1px solid var(--sand);border-radius:6px;background:#fff;cursor:pointer;color:var(--coffee)">✏️ Đổi tên</button>
+        <button onclick="menuEditorDeleteCategory('${esc2(cat)}')"
+          style="padding:3px 8px;font-size:0.72rem;border:1px solid #ffcccc;border-radius:6px;background:#fff;cursor:pointer;color:#c0392b">🗑️ Xóa</button>
+      </div>`;
+    bycat[cat].forEach(function(item){
+      const idx = item._idx;
+      html += `<div class="menu-item-row" data-idx="${idx}" style="background:${item.enabled?'#fff':'#fafafa'};border:1.5px solid ${item.enabled?'var(--sand)':'#eee'};border-radius:8px;padding:8px 10px;margin-bottom:6px;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <input type="checkbox" ${item.enabled?'checked':''} onchange="menuEditorToggle(${idx},this.checked)"
+            style="width:16px;height:16px;cursor:pointer;accent-color:var(--green)">
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;font-size:0.85rem;color:${item.enabled?'#333':'#aaa'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc2(item.name)}</div>
+            <div style="font-size:0.75rem;color:#888">${fmt(item.price)} ${item.no_options?'· <span style=\"color:#999;font-size:0.7rem\">Không có tùy chọn</span>':''}</div>
+          </div>
+          <button onclick="menuEditorEdit(${idx})"
+            style="padding:5px 9px;font-size:0.78rem;border:1px solid var(--sand);border-radius:7px;background:#fdf6ee;cursor:pointer;color:var(--coffee);white-space:nowrap">✏️ Sửa</button>
+          <button onclick="menuEditorDelete(${idx})"
+            style="padding:5px 9px;font-size:0.78rem;border:1px solid #ffcccc;border-radius:7px;background:#fff5f5;cursor:pointer;color:#c0392b">🗑️</button>
+        </div>
+      </div>`;
+    });
+    html += `<button onclick="menuEditorAddItemToCategory('${esc2(cat)}')"
+      style="width:100%;padding:7px;margin-top:2px;background:transparent;border:1.5px dashed var(--sand);border-radius:8px;color:var(--coffee);font-size:0.8rem;cursor:pointer;">
+      ➕ Thêm món vào "${esc2(cat)}"
+    </button>`;
+    html += '</div>';
+  });
+
+  list.innerHTML = html;
+}
+
+function esc2(s){ return String(s||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+function menuEditorToggle(idx, enabled) {
+  menuEditorData[idx].enabled = enabled;
+}
+
+function menuEditorEdit(idx) {
+  const item = menuEditorData[idx];
+  showMenuItemModal(idx, item);
+}
+
+function menuEditorDelete(idx) {
+  if(!confirm('Xóa món "' + menuEditorData[idx].name + '"?')) return;
+  menuEditorData.splice(idx, 1);
+  renderMenuEditor();
+}
+
+function menuEditorAddItem() {
+  // Lấy danh mục đầu tiên
+  const cats = [...new Set(menuEditorData.map(function(i){return i.category;}))];
+  const defaultCat = cats[0] || 'Danh mục mới';
+  showMenuItemModal(null, {category:defaultCat, name:'', price:0, no_options:false, enabled:true});
+}
+
+function menuEditorAddItemToCategory(cat) {
+  showMenuItemModal(null, {category:cat, name:'', price:0, no_options:false, enabled:true});
+}
+
+function menuEditorAddCategory() {
+  const name = prompt('Tên danh mục mới:');
+  if(!name || !name.trim()) return;
+  menuEditorData.push({category:name.trim(), name:'Món mới 1', price:30000, no_options:false, enabled:true, sort_order:999});
+  renderMenuEditor();
+  showToast('✅ Đã thêm danh mục "' + name.trim() + '"');
+}
+
+function menuEditorRenameCategory(oldCat) {
+  const newName = prompt('Tên mới cho danh mục "' + oldCat + '":', oldCat);
+  if(!newName || !newName.trim() || newName.trim()===oldCat) return;
+  menuEditorData.forEach(function(item){
+    if(item.category===oldCat) item.category=newName.trim();
+  });
+  renderMenuEditor();
+  showToast('✅ Đã đổi tên danh mục');
+}
+
+function menuEditorDeleteCategory(cat) {
+  const count = menuEditorData.filter(function(i){return i.category===cat;}).length;
+  if(!confirm('Xóa danh mục "' + cat + '" và ' + count + ' món trong đó?')) return;
+  menuEditorData = menuEditorData.filter(function(i){return i.category!==cat;});
+  renderMenuEditor();
+  showToast('🗑️ Đã xóa danh mục');
+}
+
+// Modal sửa món
+function showMenuItemModal(idx, item) {
+  const cats = [...new Set(menuEditorData.map(function(i){return i.category;}))];
+  let catOptions = cats.map(function(c){
+    return `<option value="${esc2(c)}" ${c===item.category?'selected':''}>${esc2(c)}</option>`;
+  }).join('');
+
+  const modal = document.createElement('div');
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px';
+  modal.innerHTML=`
+    <div style="background:#fff;border-radius:14px;padding:20px;width:100%;max-width:400px;max-height:90vh;overflow-y:auto">
+      <h3 style="margin:0 0 14px;color:var(--brown);font-family:'Playfair Display',serif">${idx===null?'➕ Thêm món':'✏️ Sửa món'}</h3>
+
+      <label style="font-size:0.8rem;font-weight:600;color:#555">Danh mục</label>
+      <select id="miCat" style="width:100%;padding:8px;border:1.5px solid var(--sand);border-radius:8px;margin:4px 0 10px;font-family:'DM Sans',sans-serif;font-size:0.85rem">
+        ${catOptions}
+        <option value="__new__">+ Tạo danh mục mới...</option>
+      </select>
+
+      <label style="font-size:0.8rem;font-weight:600;color:#555">Tên món</label>
+      <input id="miName" value="${esc2(item.name)}" placeholder="VD: Cà phê sữa đá"
+        style="width:100%;padding:8px;border:1.5px solid var(--sand);border-radius:8px;margin:4px 0 10px;font-family:'DM Sans',sans-serif;font-size:0.85rem;box-sizing:border-box">
+
+      <label style="font-size:0.8rem;font-weight:600;color:#555">Giá (VNĐ)</label>
+      <input id="miPrice" type="number" value="${item.price||0}" step="1000" min="0"
+        style="width:100%;padding:8px;border:1.5px solid var(--sand);border-radius:8px;margin:4px 0 10px;font-family:'DM Sans',sans-serif;font-size:0.85rem;box-sizing:border-box">
+
+      <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer">
+        <input type="checkbox" id="miNoOpts" ${item.no_options?'checked':''} style="width:16px;height:16px;accent-color:var(--coffee)">
+        <span style="font-size:0.83rem;color:#555">Không có tùy chọn đường/đá (topping, phụ liệu...)</span>
+      </label>
+
+      <label style="display:flex;align-items:center;gap:8px;margin-bottom:16px;cursor:pointer">
+        <input type="checkbox" id="miEnabled" ${item.enabled!==false?'checked':''} style="width:16px;height:16px;accent-color:var(--green)">
+        <span style="font-size:0.83rem;color:#555">Đang bán (hiển thị cho khách)</span>
+      </label>
+
+      <div style="display:flex;gap:8px">
+        <button onclick="this.closest('[style]').remove()"
+          style="flex:1;padding:10px;border:1.5px solid var(--sand);border-radius:9px;background:#fff;cursor:pointer;font-weight:600;color:#888">Hủy</button>
+        <button onclick="menuItemModalSave(${idx}, this.closest('[style]'))"
+          style="flex:2;padding:10px;background:var(--coffee);color:#fdf6ee;border:none;border-radius:9px;cursor:pointer;font-weight:700;font-size:0.9rem">
+          ${idx===null?'➕ Thêm món':'💾 Lưu thay đổi'}</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  // Click outside to close
+  modal.addEventListener('click', function(e){ if(e.target===modal) modal.remove(); });
+}
+
+function menuItemModalSave(idx, modalEl) {
+  let cat = document.getElementById('miCat').value;
+  const name = document.getElementById('miName').value.trim();
+  const price = parseInt(document.getElementById('miPrice').value)||0;
+  const noOpts = document.getElementById('miNoOpts').checked;
+  const enabled = document.getElementById('miEnabled').checked;
+
+  if(!name){ alert('Vui lòng nhập tên món!'); return; }
+
+  if(cat==='__new__'){
+    cat = prompt('Tên danh mục mới:');
+    if(!cat||!cat.trim()){ return; }
+    cat = cat.trim();
+  }
+
+  const newItem = {category:cat, name:name, price:price, no_options:noOpts, enabled:enabled, sort_order:idx===null?999:menuEditorData[idx].sort_order};
+
+  if(idx===null){
+    menuEditorData.push(newItem);
+  } else {
+    menuEditorData[idx] = newItem;
+  }
+
+  modalEl.remove();
+  renderMenuEditor();
+  showToast(idx===null?'✅ Đã thêm món mới':'✅ Đã cập nhật món');
+}
+
+async function saveMenuToServer() {
+  showToast('⏳ Đang lưu menu...');
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({action:'saveMenu', menu:menuEditorData})
+    });
+    // Reload menu cho khách ngay
+    await reloadMenuFromServer();
+    showToast('✅ Đã lưu menu! Khách thấy ngay.');
+  } catch(e) {
+    showToast('❌ Lỗi lưu menu: ' + e.message);
+  }
+}
+
+// Reload menu từ server và cập nhật giao diện khách
+async function reloadMenuFromServer() {
+  try {
+    const resp = await fetch(APPS_SCRIPT_URL + '?action=getMenu');
+    const json = await resp.json();
+    if(json.status==='ok' && json.menu){
+      // Cập nhật MENU và OPTS toàn cục
+      Object.keys(MENU).forEach(function(k){ delete MENU[k]; });
+      Object.assign(MENU, json.menu);
+      if(json.opts){
+        Object.keys(OPTS).forEach(function(k){ delete OPTS[k]; });
+        Object.assign(OPTS, json.opts);
+      }
+      buildMenu();
+    }
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════════════════════════════
+// OPTS EDITOR (đường / đá / topping)
+// ══════════════════════════════════════════════════════════════
+let optsEditorData = [];
+let optsEditorLoaded = false;
+
+async function loadOptsEditor() {
+  try {
+    const resp = await fetch(APPS_SCRIPT_URL + '?action=getMenuRaw');
+    const json = await resp.json();
+    if(json.status==='ok'){
+      optsEditorData = json.opts || [];
+      optsEditorLoaded = true;
+      renderOptsEditor();
+    }
+  } catch(e) {}
+}
+
+function renderOptsEditor() {
+  let html = '';
+  optsEditorData.forEach(function(opt, oi){
+    html += `<div style="background:#fff;border:1.5px solid var(--sand);border-radius:10px;padding:12px;margin-bottom:10px;">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+        <div style="flex:1">
+          <div style="font-size:0.72rem;color:#999;margin-bottom:2px">Tên nhóm tùy chọn</div>
+          <input value="${esc2(opt.label)}" onchange="optsEditorData[${oi}].label=this.value"
+            style="width:100%;padding:6px 8px;border:1.5px solid var(--sand);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:0.85rem;box-sizing:border-box">
+        </div>
+        <button onclick="optsEditorRemoveGroup(${oi})"
+          style="padding:6px 10px;border:1px solid #ffcccc;border-radius:7px;background:#fff5f5;cursor:pointer;color:#c0392b;font-size:0.8rem;margin-top:18px">🗑️</button>
+      </div>
+      <div style="font-size:0.72rem;color:#999;margin-bottom:5px">Các lựa chọn (kéo để sắp xếp):</div>
+      <div id="optChoices${oi}">`;
+    opt.choices.forEach(function(c, ci){
+      html += `<div style="display:flex;align-items:center;gap:5px;margin-bottom:5px;">
+          <input value="${esc2(c)}" onchange="optsEditorData[${oi}].choices[${ci}]=this.value"
+            style="flex:1;padding:6px 8px;border:1.5px solid var(--sand);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:0.83rem">
+          <button onclick="optsEditorRemoveChoice(${oi},${ci})"
+            style="padding:5px 8px;border:1px solid #ffcccc;border-radius:6px;background:#fff5f5;cursor:pointer;color:#c0392b;font-size:0.75rem">✕</button>
+        </div>`;
+    });
+    html += `</div>
+      <button onclick="optsEditorAddChoice(${oi})"
+        style="width:100%;padding:6px;margin-top:4px;background:transparent;border:1.5px dashed var(--sand);border-radius:7px;color:var(--coffee);font-size:0.8rem;cursor:pointer;">
+        ➕ Thêm lựa chọn
+      </button>
+    </div>`;
+  });
+  document.getElementById('optsEditorList').innerHTML = html;
+}
+
+function optsEditorAddChoice(oi) {
+  const val = prompt('Tên lựa chọn mới:');
+  if(!val||!val.trim()) return;
+  optsEditorData[oi].choices.push(val.trim());
+  renderOptsEditor();
+}
+
+function optsEditorRemoveChoice(oi, ci) {
+  if(optsEditorData[oi].choices.length<=1){ alert('Phải có ít nhất 1 lựa chọn!'); return; }
+  optsEditorData[oi].choices.splice(ci,1);
+  renderOptsEditor();
+}
+
+function optsEditorRemoveGroup(oi) {
+  if(!confirm('Xóa nhóm tùy chọn "' + optsEditorData[oi].label + '"?')) return;
+  optsEditorData.splice(oi,1);
+  renderOptsEditor();
+}
+
+function optsEditorAddGroup() {
+  const key = 'opt_' + Date.now();
+  const label = prompt('Tên nhóm tùy chọn mới (VD: Topping, Size...):');
+  if(!label||!label.trim()) return;
+  optsEditorData.push({key:key, label:label.trim(), choices:['Lựa chọn 1']});
+  renderOptsEditor();
+}
+
+async function saveOptsToServer() {
+  showToast('⏳ Đang lưu tùy chọn...');
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({action:'saveOpts', opts:optsEditorData})
+    });
+    await reloadMenuFromServer();
+    showToast('✅ Đã lưu tùy chọn!');
+  } catch(e) {
+    showToast('❌ Lỗi: ' + e.message);
+  }
+}
+
 // Add secret admin trigger: tap header logo 5 times quickly
 let adminTaps = 0, adminTimer = null;
 function handleAdminTap(){
@@ -2046,7 +2520,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   loadAdminSettings();
   checkStoreHours();
-  buildMenu();
+  // Load menu từ server (nếu thất bại thì dùng menu hardcode)
+  reloadMenuFromServer().catch(function(){ buildMenu(); });
   // Recheck every minute
   setInterval(checkStoreHours, 60000);
 });
