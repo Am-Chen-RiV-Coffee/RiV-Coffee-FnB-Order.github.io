@@ -1873,7 +1873,7 @@ goPage = function(id, step){
 
 // ── ADMIN SETTINGS ────────────────────────────────────────
 // Lưu vào localStorage (chỉ trên thiết bị này — dành cho chủ quán)
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzVRyT0DbUF-6ochC8TFj5Y47h6oadQJSPud6YkmjJTwOXeX8DWRmyHue_Zop1GPAZyuw/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxiI-_kC_ptjQy951_YlgAQYqR4GtqTddyB14BcKvDjW4bUJfjHDMLHlUifmsWoTnfF9Q/exec';
 
 let adminSettings = {
   open: '07:00', close: '22:00', manual: 'auto',
@@ -2495,11 +2495,26 @@ async function loadOptsEditor() {
     const resp = await fetch(APPS_SCRIPT_URL + '?action=getMenuRaw');
     const json = await resp.json();
     if(json.status==='ok'){
-      optsEditorData = json.opts || [];
+      // Chuẩn hóa choices: luôn là {name, price} object
+      optsEditorData = (json.opts || []).map(function(opt){
+        return {
+          key: opt.key,
+          label: opt.label,
+          choices: (opt.choices || []).map(function(c){
+            if(typeof c === 'object' && c !== null) return {name: String(c.name||''), price: parseInt(c.price)||0};
+            var s = String(c||'').trim();
+            var parts = s.split(':');
+            if(parts.length === 2 && !isNaN(parseInt(parts[1]))) return {name: parts[0].trim(), price: parseInt(parts[1])};
+            return {name: s, price: 0};
+          })
+        };
+      });
       optsEditorLoaded = true;
       renderOptsEditor();
     }
-  } catch(e) {}
+  } catch(e) {
+    console.error('loadOptsEditor error:', e);
+  }
 }
 
 function renderOptsEditor() {
@@ -2547,26 +2562,16 @@ function optsEditorAddChoice(oi) {
   if(!val||!val.trim()) return;
   const priceStr = prompt('Giá thêm (VD: 5000). Để trống nếu miễn phí:', '0');
   const price = parseInt(priceStr)||0;
-  if(price > 0) {
-    optsEditorData[oi].choices.push({name: val.trim(), price: price});
-  } else {
-    optsEditorData[oi].choices.push(val.trim());
-  }
+  optsEditorData[oi].choices.push({name: val.trim(), price: price});
   renderOptsEditor();
 }
 
 function optsUpdateChoice(oi, ci, field, val) {
-  const c = optsEditorData[oi].choices[ci];
-  if(typeof c === 'object') {
-    c[field] = val;
-  } else {
-    // Convert string to object khi cần lưu thêm thông tin
-    if(field === 'name') {
-      optsEditorData[oi].choices[ci] = val;
-    } else if(field === 'price' && val > 0) {
-      optsEditorData[oi].choices[ci] = {name: c, price: val};
-    }
+  // Sau khi normalize, choices luôn là {name, price}
+  if(!optsEditorData[oi].choices[ci] || typeof optsEditorData[oi].choices[ci] !== 'object') {
+    optsEditorData[oi].choices[ci] = {name: String(optsEditorData[oi].choices[ci]||''), price: 0};
   }
+  optsEditorData[oi].choices[ci][field] = val;
 }
 
 function optsEditorRemoveChoice(oi, ci) {
@@ -2592,11 +2597,23 @@ function optsEditorAddGroup() {
 async function saveOptsToServer() {
   showToast('⏳ Đang lưu tùy chọn...');
   try {
+    // Đảm bảo choices là {name, price} object trước khi gửi
+    const normalized = optsEditorData.map(function(opt){
+      return {
+        key: opt.key,
+        label: opt.label,
+        choices: opt.choices.map(function(c){
+          if(typeof c === 'object') return {name: String(c.name||''), price: parseInt(c.price)||0};
+          return {name: String(c||''), price: 0};
+        })
+      };
+    });
     await fetch(APPS_SCRIPT_URL, {
       method:'POST',
       headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body: JSON.stringify({action:'saveOpts', opts:optsEditorData})
+      body: JSON.stringify({action:'saveOpts', opts:normalized})
     });
+    optsEditorLoaded = false; // Force reload lần sau
     await reloadMenuFromServer();
     showToast('✅ Đã lưu tùy chọn!');
   } catch(e) {
