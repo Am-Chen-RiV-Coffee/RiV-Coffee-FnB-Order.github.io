@@ -1684,7 +1684,7 @@ goPage = function(id, step){
 
 // ── ADMIN SETTINGS ────────────────────────────────────────
 // Lưu vào localStorage (chỉ trên thiết bị này — dành cho chủ quán)
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxIiPhNxEmN6-0HS64esnp6HuYJc-mLkkoHSIPcw3FouWkDhFfAWmIvFoEuoQ68JHfJ0Q/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzTkyYGI5Cq1Ij_dUoVyKt8Jt3AFC7z8-CeEKTV6u27HYjMIs1XZlGUV_QMibPNs2TJnQ/exec';
 
 let adminSettings = {
   open: '07:00', close: '22:00', manual: 'auto',
@@ -1904,14 +1904,41 @@ function exitAdmin(){
 // ── GOOGLE SHEETS SUBMIT ──────────────────────────────────
 async function submitToGoogleSheets(orderData){
   const url = APPS_SCRIPT_URL;
+
+  // Tách ảnh biên lai ra (có thể rất lớn) — gửi riêng nếu cần
+  const proofImage = orderData.proof_image || '';
+  const payload = Object.assign({}, orderData, { proof_image: proofImage ? '[base64_attached]' : '' });
+
+  // Cách 1: fetch với mode no-cors + dùng FormData (vượt qua CORS preflight)
+  // Apps Script nhận qua e.postData.contents với FormData không hoạt động
+  // → Dùng cách đáng tin cậy nhất: gửi qua URL params + body dạng text/plain
   try {
-    await fetch(url, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(orderData)
+    // Gửi toàn bộ data (kể cả ảnh) dưới dạng JSON thuần, wrap trong FormData
+    // Apps Script đọc được e.postData.contents dù no-cors
+    const body = JSON.stringify(orderData);
+    const resp = await fetch(url, {
+      method:  'POST',
+      mode:    'no-cors',         // bắt buộc để tránh CORS error
+      headers: { 'Content-Type': 'text/plain' }, // text/plain = simple request, không bị preflight
+      body:    body
     });
-  } catch(e){ console.warn('Apps Script submit error:', e); }
+    console.log('Order submitted (no-cors, text/plain)');
+  } catch(e){
+    console.warn('Apps Script submit error:', e);
+    // Fallback: gửi qua Image beacon (không nhận response nhưng chắc chắn đến)
+    try {
+      const compact = {
+        ref:        orderData.ref,
+        name:       orderData.name,
+        phone:      orderData.phone,
+        address:    orderData.address,
+        total_fmt:  orderData.total_fmt,
+        send_email: true,
+        _fallback:  true
+      };
+      new Image().src = url + '?data=' + encodeURIComponent(JSON.stringify(compact));
+    } catch(e2){}
+  }
 }
 
 // Override confirmOrder để gửi đơn hàng đầy đủ lên Apps Script (Sheets + Email)
