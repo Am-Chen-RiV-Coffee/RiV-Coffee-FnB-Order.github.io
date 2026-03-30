@@ -821,15 +821,27 @@ function buildMenu(){
     if(hasOpts){
       Object.keys(OPTS).forEach(ok => {
         const o = OPTS[ok];
-        const sel = e ? (e[ok] || o.c[0]) : o.c[0];
-        optHtml += `<div class="opt-row"><span class="opt-label">${o.label}:</span><div class="opt-chips">`;
-        o.c.forEach(c => {
-          // Hỗ trợ cả string thuần và object {name, price}
+        const isMulti = o.multi === true; // nhóm cho phép chọn nhiều
+        const maxSel = o.max || 1;
+        // sel: single=value, multi=array
+        const selRaw = e ? e[ok] : null;
+        const selArr = isMulti ? (Array.isArray(selRaw) ? selRaw : (selRaw ? [selRaw] : [])) : null;
+        const selSingle = !isMulti ? (selRaw || o.c[0]) : null;
+
+        const labelSuffix = isMulti ? ` <span style="font-size:0.67rem;color:#aaa">(chọn tối đa ${maxSel})</span>` : '';
+        optHtml += `<div class="opt-row"><span class="opt-label">${o.label}:${labelSuffix}</span><div class="opt-chips">`;
+        o.c.forEach((c, ci) => {
           const cName = (typeof c === 'object') ? c.name : c;
-          const cPrice = (typeof c === 'object' && c.price) ? ' +'+fmt(c.price) : '';
-          const selVal = (typeof sel === 'object') ? sel.name : sel;
-          const isSelected = selVal === cName;
-          optHtml += `<button class="opt-chip${isSelected?' selected':''}" onclick="setOpt('${key}','${ok}',${JSON.stringify(c)},this)">${cName}${cPrice}</button>`;
+          const cPrice = (typeof c === 'object' && c.price > 0) ? ' <span style="font-size:0.65rem">+'+fmt(c.price)+'</span>' : '';
+          let isSelected;
+          if(isMulti) {
+            isSelected = selArr.some(function(s){ return ((typeof s==='object'?s.name:s) === cName); });
+          } else {
+            const selVal = (typeof selSingle === 'object') ? selSingle.name : selSingle;
+            isSelected = selVal === cName;
+          }
+          const fn = isMulti ? `toggleOpt('${key}','${ok}',${ci},this)` : `setOpt('${key}','${ok}',${ci},this)`;
+          optHtml += `<button class="opt-chip${isSelected?' selected':''}" data-ok="${ok}" data-ci="${ci}" onclick="${fn}">${cName}${cPrice}</button>`;
         });
         optHtml += `</div></div>`;
       });
@@ -878,13 +890,34 @@ function chg(key, idx, d){
   if(opts) opts.classList.toggle('visible', !!(cart[key] && cart[key].qty > 0));
   updateBar();
 }
-function setOpt(key,ok,val,el){
+function setOpt(key,ok,ci,el){
   if(!cart[key]) return;
-  // val có thể là string hoặc object {name, price}
-  cart[key][ok] = val;
-  el.closest('.opt-chips').querySelectorAll('.opt-chip').forEach(c=>c.classList.remove('selected'));
+  const c = OPTS[ok].c[ci];
+  cart[key][ok] = c; // lưu choice (string hoặc {name,price})
+  el.closest('.opt-chips').querySelectorAll('.opt-chip').forEach(b=>b.classList.remove('selected'));
   el.classList.add('selected');
-  // Tính lại giá món = basePrice + tổng giá các opt có price
+  recalcItemPrice(key);
+  updateBar();
+}
+
+// Chọn nhiều (multi) — toggle, tối đa max
+function toggleOpt(key,ok,ci,el){
+  if(!cart[key]) return;
+  const o = OPTS[ok];
+  const c = o.c[ci];
+  const max = o.max || 3;
+  if(!Array.isArray(cart[key][ok])) cart[key][ok] = [];
+  const arr = cart[key][ok];
+  const cName = (typeof c==='object') ? c.name : c;
+  const idx = arr.findIndex(function(s){ return ((typeof s==='object'?s.name:s)===cName); });
+  if(idx >= 0) {
+    arr.splice(idx,1); // bỏ chọn
+    el.classList.remove('selected');
+  } else {
+    if(arr.length >= max){ showToast('Tối đa '+max+' lựa chọn!'); return; }
+    arr.push(c); // thêm chọn
+    el.classList.add('selected');
+  }
   recalcItemPrice(key);
   updateBar();
 }
@@ -892,12 +925,14 @@ function setOpt(key,ok,val,el){
 function recalcItemPrice(key) {
   const item = cart[key];
   if(!item) return;
-  // Đảm bảo basePrice luôn là giá gốc của món (không có topping)
   if(item.basePrice === undefined) item.basePrice = item.price;
   let extra = 0;
   Object.keys(OPTS).forEach(function(ok){
     const val = item[ok];
-    if(val && typeof val === 'object' && val.price > 0) {
+    if(Array.isArray(val)) {
+      // multi-select: cộng tất cả
+      val.forEach(function(v){ if(v && typeof v==='object' && v.price>0) extra += v.price; });
+    } else if(val && typeof val==='object' && val.price>0) {
       extra += val.price;
     }
   });
@@ -1664,12 +1699,20 @@ function confirmOrder(){
     const opts=[];
     if(i.hasOpts){ Object.keys(OPTS).forEach(function(ok){
       const v = i[ok];
-      const def = OPTS[ok] ? OPTS[ok].c[0] : null;
-      const vName = (v && typeof v==='object') ? v.name : v;
-      const defName = (def && typeof def==='object') ? def.name : def;
-      if(v && vName !== defName) {
-        const price = (v && typeof v==='object' && v.price) ? ' (+'+fmt(v.price)+')' : '';
-        opts.push(OPTS[ok].label+': '+vName+price);
+      if(!v || (Array.isArray(v) && v.length===0)) return;
+      const o = OPTS[ok];
+      if(Array.isArray(v)) {
+        // multi: liệt kê tất cả đã chọn
+        const names = v.map(function(s){ return (typeof s==='object'?s.name:s) + (s.price>0?' (+'+fmt(s.price)+')':''); });
+        if(names.length) opts.push(o.label+': '+names.join(', '));
+      } else {
+        const def = o ? o.c[0] : null;
+        const vName = (typeof v==='object') ? v.name : v;
+        const defName = (def && typeof def==='object') ? def.name : def;
+        if(vName !== defName) {
+          const price = (typeof v==='object' && v.price>0) ? ' (+'+fmt(v.price)+')' : '';
+          opts.push(o.label+': '+vName+price);
+        }
       }
     }); }
     const os=opts.length?` (${opts.join(', ')})`:'';
@@ -1713,12 +1756,20 @@ function buildMsg(items,ts){
     const opts=[];
     if(i.hasOpts){ Object.keys(OPTS).forEach(function(ok){
       const v = i[ok];
-      const def = OPTS[ok] ? OPTS[ok].c[0] : null;
-      const vName = (v && typeof v==='object') ? v.name : v;
-      const defName = (def && typeof def==='object') ? def.name : def;
-      if(v && vName !== defName) {
-        const price = (v && typeof v==='object' && v.price) ? ' (+'+fmt(v.price)+')' : '';
-        opts.push(OPTS[ok].label+': '+vName+price);
+      if(!v || (Array.isArray(v) && v.length===0)) return;
+      const o = OPTS[ok];
+      if(Array.isArray(v)) {
+        // multi: liệt kê tất cả đã chọn
+        const names = v.map(function(s){ return (typeof s==='object'?s.name:s) + (s.price>0?' (+'+fmt(s.price)+')':''); });
+        if(names.length) opts.push(o.label+': '+names.join(', '));
+      } else {
+        const def = o ? o.c[0] : null;
+        const vName = (typeof v==='object') ? v.name : v;
+        const defName = (def && typeof def==='object') ? def.name : def;
+        if(vName !== defName) {
+          const price = (typeof v==='object' && v.price>0) ? ' (+'+fmt(v.price)+')' : '';
+          opts.push(o.label+': '+vName+price);
+        }
       }
     }); }
     m+=`• ${i.qty}x ${i.name}${opts.length?' ('+opts.join(', ')+')':''} – ${fmt(i.qty*i.price)}\n`;
@@ -1873,7 +1924,7 @@ goPage = function(id, step){
 
 // ── ADMIN SETTINGS ────────────────────────────────────────
 // Lưu vào localStorage (chỉ trên thiết bị này — dành cho chủ quán)
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxiI-_kC_ptjQy951_YlgAQYqR4GtqTddyB14BcKvDjW4bUJfjHDMLHlUifmsWoTnfF9Q/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6g8ESQZhql8QDaqldWJotMnlZavUDBiBPWOCgq6hzp_Bq6guNvEU8Kx24tFjyiBl9bA/exec';
 
 let adminSettings = {
   open: '07:00', close: '22:00', manual: 'auto',
@@ -2141,12 +2192,20 @@ confirmOrder = function(){
     const opts=[];
     if(i.hasOpts){ Object.keys(OPTS).forEach(function(ok){
       const v = i[ok];
-      const def = OPTS[ok] ? OPTS[ok].c[0] : null;
-      const vName = (v && typeof v==='object') ? v.name : v;
-      const defName = (def && typeof def==='object') ? def.name : def;
-      if(v && vName !== defName) {
-        const price = (v && typeof v==='object' && v.price) ? ' (+'+fmt(v.price)+')' : '';
-        opts.push(OPTS[ok].label+': '+vName+price);
+      if(!v || (Array.isArray(v) && v.length===0)) return;
+      const o = OPTS[ok];
+      if(Array.isArray(v)) {
+        // multi: liệt kê tất cả đã chọn
+        const names = v.map(function(s){ return (typeof s==='object'?s.name:s) + (s.price>0?' (+'+fmt(s.price)+')':''); });
+        if(names.length) opts.push(o.label+': '+names.join(', '));
+      } else {
+        const def = o ? o.c[0] : null;
+        const vName = (typeof v==='object') ? v.name : v;
+        const defName = (def && typeof def==='object') ? def.name : def;
+        if(vName !== defName) {
+          const price = (typeof v==='object' && v.price>0) ? ' (+'+fmt(v.price)+')' : '';
+          opts.push(o.label+': '+vName+price);
+        }
       }
     }); }
     itemsText += `• ${i.qty}x ${i.name}${opts.length?' ('+opts.join(', ')+')':''} — ${fmt(i.qty*i.price)}\n`;
@@ -2157,12 +2216,20 @@ confirmOrder = function(){
     const opts=[];
     if(i.hasOpts){ Object.keys(OPTS).forEach(function(ok){
       const v = i[ok];
-      const def = OPTS[ok] ? OPTS[ok].c[0] : null;
-      const vName = (v && typeof v==='object') ? v.name : v;
-      const defName = (def && typeof def==='object') ? def.name : def;
-      if(v && vName !== defName) {
-        const price = (v && typeof v==='object' && v.price) ? ' (+'+fmt(v.price)+')' : '';
-        opts.push(OPTS[ok].label+': '+vName+price);
+      if(!v || (Array.isArray(v) && v.length===0)) return;
+      const o = OPTS[ok];
+      if(Array.isArray(v)) {
+        // multi: liệt kê tất cả đã chọn
+        const names = v.map(function(s){ return (typeof s==='object'?s.name:s) + (s.price>0?' (+'+fmt(s.price)+')':''); });
+        if(names.length) opts.push(o.label+': '+names.join(', '));
+      } else {
+        const def = o ? o.c[0] : null;
+        const vName = (typeof v==='object') ? v.name : v;
+        const defName = (def && typeof def==='object') ? def.name : def;
+        if(vName !== defName) {
+          const price = (typeof v==='object' && v.price>0) ? ' (+'+fmt(v.price)+')' : '';
+          opts.push(o.label+': '+vName+price);
+        }
       }
     }); }
     return `${i.qty}x ${i.name}${opts.length?' ('+opts.join(', ')+')':''}`;
@@ -2500,6 +2567,8 @@ async function loadOptsEditor() {
         return {
           key: opt.key,
           label: opt.label,
+          multi:   opt.multi === true || opt.multi == 1,
+          max:     parseInt(opt.max) || (opt.multi ? 3 : 1),
           choices: (opt.choices || []).map(function(c){
             if(typeof c === 'object' && c !== null) return {name: String(c.name||''), price: parseInt(c.price)||0};
             var s = String(c||'').trim();
@@ -2529,6 +2598,18 @@ function renderOptsEditor() {
         </div>
         <button onclick="optsEditorRemoveGroup(${oi})"
           style="padding:6px 10px;border:1px solid #ffcccc;border-radius:7px;background:#fff5f5;cursor:pointer;color:#c0392b;font-size:0.8rem;margin-top:18px">🗑️</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;padding:6px 8px;background:#fdf6ee;border-radius:7px;">
+        <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:0.8rem">
+          <input type="checkbox" ${opt.multi?'checked':''} onchange="optsEditorData[${oi}].multi=this.checked;renderOptsEditor()"
+            style="accent-color:var(--coffee)">
+          Chọn nhiều (multi)
+        </label>
+        ${opt.multi ? `<label style="display:flex;align-items:center;gap:4px;font-size:0.8rem">
+          Tối đa: <input type="number" value="${opt.max||3}" min="1" max="10"
+            onchange="optsEditorData[${oi}].max=parseInt(this.value)||3"
+            style="width:45px;padding:3px 5px;border:1.5px solid var(--sand);border-radius:5px;font-size:0.82rem">
+        </label>` : ''}
       </div>
       <div style="font-size:0.72rem;color:#999;margin-bottom:5px">Các lựa chọn (kéo để sắp xếp):</div>
       <div id="optChoices${oi}">`;
@@ -2600,8 +2681,10 @@ async function saveOptsToServer() {
     // Đảm bảo choices là {name, price} object trước khi gửi
     const normalized = optsEditorData.map(function(opt){
       return {
-        key: opt.key,
-        label: opt.label,
+        key:    opt.key,
+        label:  opt.label,
+        multi:  opt.multi ? 1 : 0,
+        max:    parseInt(opt.max) || (opt.multi ? 3 : 1),
         choices: opt.choices.map(function(c){
           if(typeof c === 'object') return {name: String(c.name||''), price: parseInt(c.price)||0};
           return {name: String(c||''), price: 0};
