@@ -825,8 +825,8 @@ function buildMenu(){
         const maxSel = o.max || 1;
         // sel: single=value, multi=array
         const selRaw = e ? e[ok] : null;
-        const selArr = isMulti ? (Array.isArray(selRaw) ? selRaw : (selRaw ? [selRaw] : [])) : null;
-        const selSingle = !isMulti ? (selRaw || o.c[0]) : null;
+        const selArr = isMulti ? (Array.isArray(selRaw) ? selRaw : []) : null;
+        const selSingle = !isMulti ? (selRaw !== undefined && selRaw !== null ? selRaw : o.c[0]) : null;
 
         const labelSuffix = isMulti ? ` <span style="font-size:0.67rem;color:#aaa">(chọn tối đa ${maxSel})</span>` : '';
         optHtml += `<div class="opt-row"><span class="opt-label">${o.label}:${labelSuffix}</span><div class="opt-chips">`;
@@ -867,7 +867,7 @@ function chg(key, idx, d){
   const item = MENU[curCat][idx];
   if(!cart[key]) {
     const defaults = {};
-    Object.keys(OPTS).forEach(function(ok){ defaults[ok] = OPTS[ok].c[0]; });
+    Object.keys(OPTS).forEach(function(ok){ defaults[ok] = OPTS[ok].multi ? [] : OPTS[ok].c[0]; });
     cart[key] = Object.assign({name:item.n, price:item.p, basePrice:item.p, qty:0, note:'', cat:curCat, hasOpts:!item.x}, defaults);
   }
   // Kiểm tra tồn kho nếu đang tăng số lượng
@@ -1699,7 +1699,7 @@ function confirmOrder(){
     const opts=[];
     if(i.hasOpts){ Object.keys(OPTS).forEach(function(ok){
       const v = i[ok];
-      if(!v || (Array.isArray(v) && v.length===0)) return;
+      if(v === undefined || v === null || (Array.isArray(v) && v.length===0)) return;
       const o = OPTS[ok];
       if(Array.isArray(v)) {
         // multi: liệt kê tất cả đã chọn
@@ -1756,7 +1756,7 @@ function buildMsg(items,ts){
     const opts=[];
     if(i.hasOpts){ Object.keys(OPTS).forEach(function(ok){
       const v = i[ok];
-      if(!v || (Array.isArray(v) && v.length===0)) return;
+      if(v === undefined || v === null || (Array.isArray(v) && v.length===0)) return;
       const o = OPTS[ok];
       if(Array.isArray(v)) {
         // multi: liệt kê tất cả đã chọn
@@ -1924,7 +1924,7 @@ goPage = function(id, step){
 
 // ── ADMIN SETTINGS ────────────────────────────────────────
 // Lưu vào localStorage (chỉ trên thiết bị này — dành cho chủ quán)
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6g8ESQZhql8QDaqldWJotMnlZavUDBiBPWOCgq6hzp_Bq6guNvEU8Kx24tFjyiBl9bA/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzVRyT0DbUF-6ochC8TFj5Y47h6oadQJSPud6YkmjJTwOXeX8DWRmyHue_Zop1GPAZyuw/exec';
 
 let adminSettings = {
   open: '07:00', close: '22:00', manual: 'auto',
@@ -2192,7 +2192,7 @@ confirmOrder = function(){
     const opts=[];
     if(i.hasOpts){ Object.keys(OPTS).forEach(function(ok){
       const v = i[ok];
-      if(!v || (Array.isArray(v) && v.length===0)) return;
+      if(v === undefined || v === null || (Array.isArray(v) && v.length===0)) return;
       const o = OPTS[ok];
       if(Array.isArray(v)) {
         // multi: liệt kê tất cả đã chọn
@@ -2216,7 +2216,7 @@ confirmOrder = function(){
     const opts=[];
     if(i.hasOpts){ Object.keys(OPTS).forEach(function(ok){
       const v = i[ok];
-      if(!v || (Array.isArray(v) && v.length===0)) return;
+      if(v === undefined || v === null || (Array.isArray(v) && v.length===0)) return;
       const o = OPTS[ok];
       if(Array.isArray(v)) {
         // multi: liệt kê tất cả đã chọn
