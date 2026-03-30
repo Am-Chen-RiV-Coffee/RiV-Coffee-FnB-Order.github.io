@@ -1684,7 +1684,7 @@ goPage = function(id, step){
 
 // ── ADMIN SETTINGS ────────────────────────────────────────
 // Lưu vào localStorage (chỉ trên thiết bị này — dành cho chủ quán)
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwxfJR1xpND6ooeOxL11mc58_nUKm2jkeCveiEdijRMp9cnoLqOEyuETlG7L4nqkre9/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzTkyYGI5Cq1Ij_dUoVyKt8Jt3AFC7z8-CeEKTV6u27HYjMIs1XZlGUV_QMibPNs2TJnQ/exec';
 
 let adminSettings = {
   open: '07:00', close: '22:00', manual: 'auto',
@@ -1904,65 +1904,98 @@ function exitAdmin(){
 // ── GOOGLE SHEETS SUBMIT ──────────────────────────────────
 async function submitToGoogleSheets(orderData){
   const url = APPS_SCRIPT_URL;
-
-  // Tách ảnh ra — nếu > 500KB thì bỏ để tránh timeout
   const proofImage = orderData.proof_image || '';
-  const payload = Object.assign({}, orderData, {
-    proof_image: proofImage && proofImage.length < 500000 ? proofImage : ''
-  });
-  const body = JSON.stringify(payload);
 
-  // Thử 1: fetch POST thường (Apps Script trả CORS header khi deploy đúng)
+  // Gửi toàn bộ data kể cả ảnh (nếu ảnh < 3MB)
+  // Nếu ảnh quá lớn → gửi 2 lần: lần 1 không ảnh, lần 2 chỉ ảnh
+  const MAX_SIZE = 3 * 1024 * 1024; // 3MB tính theo ký tự base64
+  const imageFits = proofImage.length < MAX_SIZE;
+
+  const payload = Object.assign({}, orderData, {
+    proof_image: imageFits ? proofImage : ''
+  });
+
+  // === Gửi đơn hàng (có ảnh nếu vừa, không có ảnh nếu quá lớn) ===
+  const body = JSON.stringify(payload);
+  let sent = false;
+
+  // Thử 1: fetch POST thường
   try {
     const resp = await fetch(url, {
       method:  'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body:    body
     });
-    const text = await resp.text();
-    console.log('✅ Order sent:', text);
-    return;
+    await resp.text();
+    console.log('✅ Order sent (POST)');
+    sent = true;
   } catch(e1) {
-    console.warn('fetch POST thất bại, thử no-cors:', e1.message);
+    console.warn('POST thất bại, thử no-cors:', e1.message);
   }
 
-  // Thử 2: no-cors (luôn "succeed", không đọc được response)
-  try {
-    await fetch(url, {
-      method:  'POST',
-      mode:    'no-cors',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body:    body
-    });
-    console.log('✅ Order sent (no-cors)');
-    return;
-  } catch(e2) {
-    console.warn('no-cors thất bại:', e2.message);
+  // Thử 2: no-cors
+  if (!sent) {
+    try {
+      await fetch(url, {
+        method:  'POST',
+        mode:    'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body:    body
+      });
+      console.log('✅ Order sent (no-cors)');
+      sent = true;
+    } catch(e2) {
+      console.warn('no-cors thất bại:', e2.message);
+    }
   }
 
-  // Thử 3: GET beacon — chắc chắn đến, dù không có ảnh
-  try {
-    const compact = {
-      ref: payload.ref, name: payload.name, phone: payload.phone,
-      address: payload.address, note: payload.note || '',
-      items: payload.items, items_text: payload.items_text,
-      subtotal: payload.subtotal, ship_fee: payload.ship_fee, total: payload.total,
-      ship_km: payload.ship_km, payment: payload.payment,
-      subtotal_fmt: payload.subtotal_fmt, ship_fee_fmt: payload.ship_fee_fmt,
-      total_fmt: payload.total_fmt, order_nd: payload.order_nd,
-      order_time: payload.order_time, timestamp: payload.timestamp,
-      send_email: true, proof_image: ''
-    };
-    new Image().src = url + '?data=' + encodeURIComponent(JSON.stringify(compact));
-    console.log('✅ Order sent (GET fallback)');
-  } catch(e3) {
-    console.warn('GET fallback thất bại:', e3.message);
+  // Thử 3: GET fallback (không có ảnh — URL quá dài sẽ bị chặn)
+  if (!sent) {
+    try {
+      const compact = {
+        ref: payload.ref, name: payload.name, phone: payload.phone,
+        address: payload.address, note: payload.note || '',
+        items: payload.items, items_text: payload.items_text,
+        subtotal: payload.subtotal, ship_fee: payload.ship_fee, total: payload.total,
+        ship_km: payload.ship_km, payment: payload.payment,
+        subtotal_fmt: payload.subtotal_fmt, ship_fee_fmt: payload.ship_fee_fmt,
+        total_fmt: payload.total_fmt, order_nd: payload.order_nd,
+        order_time: payload.order_time, timestamp: payload.timestamp,
+        send_email: true, proof_image: ''
+      };
+      new Image().src = url + '?data=' + encodeURIComponent(JSON.stringify(compact));
+      console.log('✅ Order sent (GET fallback, no image)');
+    } catch(e3) {}
+  }
+
+  // === Nếu ảnh quá lớn → gửi ảnh riêng sau khi đơn đã được ghi ===
+  if (!imageFits && proofImage) {
+    setTimeout(async () => {
+      try {
+        const imgPayload = JSON.stringify({
+          action: 'attachProof',
+          ref:    orderData.ref,
+          proof_image: proofImage
+        });
+        await fetch(url, {
+          method:  'POST',
+          mode:    'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body:    imgPayload
+        });
+        console.log('✅ Proof image sent separately');
+      } catch(e) {}
+    }, 2000);
   }
 }
 
 // Override confirmOrder để gửi đơn hàng đầy đủ lên Apps Script (Sheets + Email)
 const _origConfirmOrder = confirmOrder;
 confirmOrder = function(){
+  // ⚠️ Lưu ảnh TRƯỚC khi gọi _origConfirmOrder()
+  // vì _origConfirmOrder() gọi goPage() → reset proofImageData = null
+  const savedProofImage = proofImageData || '';
+
   _origConfirmOrder();
   const items = Object.values(cart);
 
@@ -2007,7 +2040,7 @@ confirmOrder = function(){
     total_fmt:      fmt(orderInfo.total),
     order_nd:       orderInfo.nd,
     // --- Ảnh biên lai (base64, nếu có) ---
-    proof_image:    proofImageData || ''
+    proof_image:    savedProofImage
   });
 };
 
