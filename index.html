@@ -806,6 +806,10 @@ function buildMenu(){
   tabs.innerHTML = '';
   list.innerHTML = '';
 
+  // Đảm bảo curCat hợp lệ
+  if(!MENU[curCat]) curCat = Object.keys(MENU)[0];
+  if(!curCat) return; // MENU trống
+
   Object.keys(MENU).forEach(cat => {
     const t = document.createElement('button');
     t.className = 'cat-tab' + (cat === curCat ? ' active' : '');
@@ -2394,25 +2398,21 @@ async function reloadMenuFromServer() {
   try {
     const resp = await fetch(APPS_SCRIPT_URL + '?action=getMenu');
     const json = await resp.json();
-    console.log('🌐 getMenu response:', JSON.stringify(json).substring(0, 300));
-    if(json.status==='ok' && json.menu){
+    if(json.status==='ok' && json.menu && Object.keys(json.menu).length > 0){
+      // Chỉ cập nhật khi có data thật — không xóa trước
       Object.keys(MENU).forEach(function(k){ delete MENU[k]; });
       Object.assign(MENU, json.menu);
-      console.log('✅ MENU loaded, cats:', Object.keys(MENU));
-      if(json.opts){
+      // Reset curCat về category đầu tiên sau khi load menu mới
+      curCat = Object.keys(MENU)[0];
+      if(json.opts && Object.keys(json.opts).length > 0){
         Object.keys(OPTS).forEach(function(k){ delete OPTS[k]; });
         Object.assign(OPTS, json.opts);
-        console.log('✅ OPTS loaded:', Object.keys(OPTS));
-      } else {
-        console.warn('⚠️ json.opts is null/undefined — OPTS không được cập nhật!');
       }
-      buildMenu();
-    } else {
-      console.warn('⚠️ getMenu failed:', json);
-      buildMenu(); // dùng menu hardcode
     }
+    // Luôn buildMenu dù thành công hay không
+    buildMenu();
   } catch(e) {
-    console.error('❌ reloadMenuFromServer error:', e.message);
+    // Lỗi kết nối → dùng menu hardcode sẵn
     buildMenu();
   }
 }
@@ -2530,8 +2530,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   loadAdminSettings();
   checkStoreHours();
-  // Load menu từ server (nếu thất bại thì dùng menu hardcode)
-  reloadMenuFromServer().catch(function(){ buildMenu(); });
+  // Render menu hardcode ngay lập tức — không chờ server
+  buildMenu();
+  // Sau đó cập nhật từ server (nếu có) — không block UI
+  setTimeout(function(){
+    reloadMenuFromServer().catch(function(){});
+  }, 500);
   // Recheck every minute
   setInterval(checkStoreHours, 60000);
 });
