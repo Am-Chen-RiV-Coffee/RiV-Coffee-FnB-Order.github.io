@@ -760,9 +760,11 @@ const MENU = {
 };
 
 const OPTS = {
-  sugar:{label:"Đường",c:["Không đường","50%","100%"]},
-  ice:  {label:"Đá",   c:["Đá chung","Đá riêng","Không đá"]}
+  sugar:{label:"Đường", c:["Không đường","50%","100%"], multi:false, max:1},
+  ice:  {label:"Đá",    c:["Đá chung","Đá riêng","Không đá"], multi:false, max:1}
 };
+// Nhóm "Thêm" sẽ được load từ server (multi:true, max:3)
+// OPTS bên trên là fallback khi server chưa phản hồi
 
 // ── SHIP RATES (cập nhật theo ảnh mới) ──────────────────
 // Dưới 2.5km: 20k, freeship từ 200k
@@ -821,7 +823,7 @@ function buildMenu(){
     if(hasOpts){
       Object.keys(OPTS).forEach(ok => {
         const o = OPTS[ok];
-        const isMulti = o.multi === true; // nhóm cho phép chọn nhiều
+        const isMulti = o.multi === true || o.multi === 1; // nhóm cho phép chọn nhiều
         const maxSel = o.max || 1;
         // sel: single=value, multi=array
         const selRaw = e ? e[ok] : null;
