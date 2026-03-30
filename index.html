@@ -159,8 +159,6 @@ textarea{resize:vertical;min-height:56px;}
 /* BUTTONS */
 .btn-primary{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--gold);color:var(--brown);border:none;border-radius:9px;padding:12px 18px;font-size:0.88rem;font-weight:700;cursor:pointer;text-decoration:none;width:100%;margin-bottom:8px;font-family:'DM Sans',sans-serif;}
 .btn-messenger{display:flex;align-items:center;justify-content:center;gap:8px;background:#0084ff;color:#fff;border:none;border-radius:9px;padding:12px 18px;font-size:0.88rem;font-weight:700;cursor:pointer;text-decoration:none;width:100%;margin-bottom:8px;font-family:'DM Sans',sans-serif;}
-.btn-whatsapp{display:flex;align-items:center;justify-content:center;gap:8px;background:#25d366;color:#fff;border:none;border-radius:9px;padding:12px 18px;font-size:0.88rem;font-weight:700;cursor:pointer;text-decoration:none;width:100%;margin-bottom:8px;font-family:'DM Sans',sans-serif;}
-.btn-zalo{display:flex;align-items:center;justify-content:center;gap:8px;background:#0068ff;color:#fff;border:none;border-radius:9px;padding:12px 18px;font-size:0.88rem;font-weight:700;cursor:pointer;text-decoration:none;width:100%;margin-bottom:8px;font-family:'DM Sans',sans-serif;}
 .btn-dark{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--brown);color:var(--gold-light);border:none;border-radius:9px;padding:10px 18px;font-size:0.83rem;font-weight:600;cursor:pointer;width:100%;margin-bottom:8px;font-family:'DM Sans',sans-serif;}
 .btn-outline{background:transparent;border:1.5px solid var(--sand);color:var(--brown);border-radius:7px;padding:7px 15px;font-size:0.79rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;width:100%;margin-bottom:8px;}
 .btn-outline:hover{border-color:var(--coffee);}
@@ -222,7 +220,6 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
   const isZalo = /ZaloApp|ZaloBrowser|zalo/i.test(ua);
   const isFB   = /FBAN|FBAV|FB_IAB|FBIOS|FBSS/i.test(ua);
   const isMsg  = /Messenger|MessengerLiteForiOS/i.test(ua);
-  const isWA   = /WhatsApp/i.test(ua);
   const isLine = /Line\//.test(ua);
   const isTikTok = /musical_ly|TikTok/i.test(ua);
   const isInApp = isZalo || isFB || isMsg || isWA || isLine || isTikTok;
@@ -436,14 +433,7 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.145 2 11.243c0 2.908 1.438 5.504 3.688 7.2V22l3.37-1.85C9.989 20.37 10.98 20.5 12 20.5c5.523 0 10-4.145 10-9.257S17.523 2 12 2z"/></svg>
         Messenger
       </a>
-      <a class="contact-chip" href="https://wa.me/84356155524" target="_blank" rel="noopener noreferrer">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.121 1.533 5.849L.054 23.454l5.759-1.508A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.886 0-3.645-.516-5.148-1.413l-.369-.219-3.819 1 1.021-3.727-.24-.384A9.96 9.96 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
-        WhatsApp
-      </a>
-      <a class="contact-chip" href="https://zalo.me/0356155524" target="_blank" rel="noopener noreferrer">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 2c5.514 0 10 4.486 10 10s-4.486 10-10 10S2 17.514 2 12 6.486 2 12 2zm-1 5v2H7v2h3v1H7v2h4v2h2v-2h1c1.657 0 3-1.343 3-3s-1.343-3-3-3h-1V7h-2zm2 2h1c.552 0 1 .448 1 1s-.448 1-1 1h-1V9z"/></svg>
-        Zalo
-      </a>
+
     </div>
   </div>
 
@@ -566,21 +556,14 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
   <div style="background:#e8f5e9;border-radius:10px;padding:12px 14px;margin-bottom:12px;border:1.5px solid #b2dfbc;">
     <div style="font-size:0.85rem;font-weight:700;color:#2e7d32;margin-bottom:4px;">⏳ Đang chờ quán xác nhận</div>
     <div style="font-size:0.78rem;color:#444;line-height:1.6;">
-      Quán sẽ đối chiếu <strong>ảnh biên lai</strong> với mã đơn &amp; số tiền, sau đó phản hồi qua Messenger / Zalo / WhatsApp.<br>
+      Quán sẽ đối chiếu <strong>ảnh biên lai</strong> với mã đơn &amp; số tiền, sau đó phản hồi qua <strong>Messenger</strong>.<br>
       <span style="color:#888;">Sau 15 phút chưa có phản hồi → gọi <a href="tel:0356155524" style="color:var(--coffee);font-weight:700;">0356155524</a></span>
     </div>
   </div>
-  <a class="btn-messenger" id="messengerBtn" href="#" target="_blank" rel="noopener noreferrer">
+  <a class="btn-messenger" id="messengerBtn" href="https://m.me/riv.coffee.fnb" target="_blank" rel="noopener noreferrer"
+    onclick="sendToMessenger(event)">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.145 2 11.243c0 2.908 1.438 5.504 3.688 7.2V22l3.37-1.85C9.989 20.37 10.98 20.5 12 20.5c5.523 0 10-4.145 10-9.257S17.523 2 12 2zm1.02 12.47l-2.55-2.72-4.98 2.72 5.48-5.82 2.61 2.72 4.92-2.72-5.48 5.82z"/></svg>
-    Gửi đơn qua Messenger
-  </a>
-  <a class="btn-whatsapp" id="whatsappBtn" href="#" target="_blank" rel="noopener noreferrer">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.121 1.533 5.849L.054 23.454l5.759-1.508A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.886 0-3.645-.516-5.148-1.413l-.369-.219-3.819 1 1.021-3.727-.24-.384A9.96 9.96 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
-    Gửi đơn qua WhatsApp
-  </a>
-  <a class="btn-zalo" id="zaloBtn" href="#" target="_blank" rel="noopener noreferrer">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 2c5.514 0 10 4.486 10 10s-4.486 10-10 10S2 17.514 2 12 6.486 2 12 2zm-1 5v2H7v2h3v1H7v2h4v2h2v-2h1c1.657 0 3-1.343 3-3s-1.343-3-3-3h-1V7h-2zm2 2h1c.552 0 1 .448 1 1s-.448 1-1 1h-1V9z"/></svg>
-    Gửi đơn qua Zalo
+    💬 Xác nhận đơn qua Messenger
   </a>
   <button class="btn-dark" onclick="saveReceipt()">📸 Lưu ảnh đơn hàng</button>
   <button class="btn-outline" onclick="goPage('page-menu',1)">✏️ Quay lại chọn món</button>
@@ -841,7 +824,12 @@ function buildMenu(){
         const sel = e ? (e[ok] || o.c[0]) : o.c[0];
         optHtml += `<div class="opt-row"><span class="opt-label">${o.label}:</span><div class="opt-chips">`;
         o.c.forEach(c => {
-          optHtml += `<button class="opt-chip${sel===c?' selected':''}" onclick="setOpt('${key}','${ok}','${c}',this)">${c}</button>`;
+          // Hỗ trợ cả string thuần và object {name, price}
+          const cName = (typeof c === 'object') ? c.name : c;
+          const cPrice = (typeof c === 'object' && c.price) ? ' +'+fmt(c.price) : '';
+          const selVal = (typeof sel === 'object') ? sel.name : sel;
+          const isSelected = selVal === cName;
+          optHtml += `<button class="opt-chip${isSelected?' selected':''}" onclick="setOpt('${key}','${ok}',${JSON.stringify(c)},this)">${cName}${cPrice}</button>`;
         });
         optHtml += `</div></div>`;
       });
@@ -868,7 +856,7 @@ function chg(key, idx, d){
   if(!cart[key]) {
     const defaults = {};
     Object.keys(OPTS).forEach(function(ok){ defaults[ok] = OPTS[ok].c[0]; });
-    cart[key] = Object.assign({name:item.n, price:item.p, qty:0, note:'', cat:curCat, hasOpts:!item.x}, defaults);
+    cart[key] = Object.assign({name:item.n, price:item.p, basePrice:item.p, qty:0, note:'', cat:curCat, hasOpts:!item.x}, defaults);
   }
   // Kiểm tra tồn kho nếu đang tăng số lượng
   if(d > 0){
@@ -892,9 +880,28 @@ function chg(key, idx, d){
 }
 function setOpt(key,ok,val,el){
   if(!cart[key]) return;
+  // val có thể là string hoặc object {name, price}
   cart[key][ok] = val;
   el.closest('.opt-chips').querySelectorAll('.opt-chip').forEach(c=>c.classList.remove('selected'));
   el.classList.add('selected');
+  // Tính lại giá món = basePrice + tổng giá các opt có price
+  recalcItemPrice(key);
+  updateBar();
+}
+
+function recalcItemPrice(key) {
+  const item = cart[key];
+  if(!item) return;
+  // Đảm bảo basePrice luôn là giá gốc của món (không có topping)
+  if(item.basePrice === undefined) item.basePrice = item.price;
+  let extra = 0;
+  Object.keys(OPTS).forEach(function(ok){
+    const val = item[ok];
+    if(val && typeof val === 'object' && val.price > 0) {
+      extra += val.price;
+    }
+  });
+  item.price = item.basePrice + extra;
 }
 function setNote(key,v){ if(cart[key]) cart[key].note=v; }
 function updateBar(){
@@ -1607,7 +1614,13 @@ async function goPayment(){
   let html=`<div style="font-family:'Playfair Display',serif;font-size:0.93rem;margin-bottom:8px;color:var(--coffee)">Tóm tắt đơn hàng</div>`;
   items.forEach(i=>{
     const opts=[];
-    if(i.hasOpts){ Object.keys(OPTS).forEach(ok=>{ if(i[ok] && i[ok]!==OPTS[ok].c[0]) opts.push(i[ok]); }); }
+    if(i.hasOpts){ Object.keys(OPTS).forEach(function(ok){
+      const v = i[ok];
+      const def = OPTS[ok] ? OPTS[ok].c[0] : null;
+      const vName = (v && typeof v==='object') ? v.name : v;
+      const defName = (def && typeof def==='object') ? def.name : def;
+      if(v && vName !== defName) opts.push(vName);
+    }); }
     const os=opts.length?` <span style="font-size:0.71rem;color:#aaa">(${opts.join(', ')})</span>`:'';
     html+=`<div class="summary-row"><span style="flex:1">${i.qty}x ${i.name}${os}</span><span style="white-space:nowrap">${fmt(i.qty*i.price)}</span></div>`;
     if(i.note)html+=`<div style="font-size:0.71rem;color:#888;padding-left:11px;margin-bottom:3px">📝 ${i.note}</div>`;
@@ -1649,7 +1662,16 @@ function confirmOrder(){
   let iH='';
   items.forEach(i=>{
     const opts=[];
-    if(i.hasOpts){ Object.keys(OPTS).forEach(function(ok){ if(i[ok] && i[ok]!==OPTS[ok].c[0]) opts.push(OPTS[ok].label+': '+i[ok]); }); }
+    if(i.hasOpts){ Object.keys(OPTS).forEach(function(ok){
+      const v = i[ok];
+      const def = OPTS[ok] ? OPTS[ok].c[0] : null;
+      const vName = (v && typeof v==='object') ? v.name : v;
+      const defName = (def && typeof def==='object') ? def.name : def;
+      if(v && vName !== defName) {
+        const price = (v && typeof v==='object' && v.price) ? ' (+'+fmt(v.price)+')' : '';
+        opts.push(OPTS[ok].label+': '+vName+price);
+      }
+    }); }
     const os=opts.length?` (${opts.join(', ')})`:'';
     iH+=`<div class="receipt-row"><span style="flex:1">${i.qty}x ${i.name}${os}</span><span>${fmt(i.qty*i.price)}</span></div>`;
     if(i.note)iH+=`<div style="font-size:0.71rem;color:#888;padding-left:8px;margin-bottom:3px">📝 ${i.note}</div>`;
@@ -1677,9 +1699,10 @@ function confirmOrder(){
     document.getElementById('receiptProofWrap').style.display='none';
   }
   const msg = encodeURIComponent(buildMsg(items,ts));
-  document.getElementById('messengerBtn').href='https://m.me/riv.coffee.fnb?text='+msg;
-  document.getElementById('whatsappBtn').href='https://wa.me/84356155524?text='+msg;
-  document.getElementById('zaloBtn').href='https://zalo.me/0356155524';
+  // Messenger không hỗ trợ pre-fill text → dùng link page + hướng dẫn copy
+  // Lưu nội dung đơn cho Messenger
+  window._orderMsg = decodeURIComponent(msg);
+  document.getElementById('messengerBtn').setAttribute('data-msg', window._orderMsg);
 
   goPage('page-receipt',4);
 }
@@ -1688,7 +1711,16 @@ function buildMsg(items,ts){
   let m=`🧾 ĐƠN HÀNG – RiV Coffee FnB\n━━━━━━━━━━━━━━━\n📌 Mã: ${orderInfo.ref} | 🕐 ${ts}\n━━━━━━━━━━━━━━━\n📋 MÓN:\n`;
   items.forEach(i=>{
     const opts=[];
-    if(i.hasOpts){ Object.keys(OPTS).forEach(function(ok){ if(i[ok] && i[ok]!==OPTS[ok].c[0]) opts.push(OPTS[ok].label+': '+i[ok]); }); }
+    if(i.hasOpts){ Object.keys(OPTS).forEach(function(ok){
+      const v = i[ok];
+      const def = OPTS[ok] ? OPTS[ok].c[0] : null;
+      const vName = (v && typeof v==='object') ? v.name : v;
+      const defName = (def && typeof def==='object') ? def.name : def;
+      if(v && vName !== defName) {
+        const price = (v && typeof v==='object' && v.price) ? ' (+'+fmt(v.price)+')' : '';
+        opts.push(OPTS[ok].label+': '+vName+price);
+      }
+    }); }
     m+=`• ${i.qty}x ${i.name}${opts.length?' ('+opts.join(', ')+')':''} – ${fmt(i.qty*i.price)}\n`;
     if(i.note)m+=`   📝 ${i.note}\n`;
   });
@@ -1698,6 +1730,23 @@ function buildMsg(items,ts){
   if(orderInfo.note)m+=`\n📝 ${orderInfo.note}`;
   m+=`\n━━━━━━━━━━━━━━━\n💳 MB Bank | STK: 0357405770 – TRAN PHOI NGOC\nNội dung: ${orderInfo.nd}`;
   return m;
+}
+
+// ── GỬI ĐƠN QUA MESSENGER ──────────────────────────────────
+function sendToMessenger(evt) {
+  evt.preventDefault();
+  const msg = window._orderMsg || document.getElementById('messengerBtn').getAttribute('data-msg') || '';
+  const messengerUrl = 'https://m.me/riv.coffee.fnb';
+
+  // Copy nội dung đơn vào clipboard
+  if(navigator.clipboard && msg) {
+    navigator.clipboard.writeText(msg).then(function(){
+      showToast('📋 Đã copy đơn hàng! Mở Messenger, paste & gửi nhé.');
+    }).catch(function(){});
+  }
+
+  // Mở Messenger sau 600ms
+  setTimeout(function(){ window.open(messengerUrl, '_blank'); }, 600);
 }
 
 // ── CANCEL ORDER ──────────────────────────────────────────
@@ -2090,14 +2139,32 @@ confirmOrder = function(){
   let itemsText = '';
   items.forEach(i=>{
     const opts=[];
-    if(i.hasOpts){ Object.keys(OPTS).forEach(function(ok){ if(i[ok] && i[ok]!==OPTS[ok].c[0]) opts.push(OPTS[ok].label+': '+i[ok]); }); }
+    if(i.hasOpts){ Object.keys(OPTS).forEach(function(ok){
+      const v = i[ok];
+      const def = OPTS[ok] ? OPTS[ok].c[0] : null;
+      const vName = (v && typeof v==='object') ? v.name : v;
+      const defName = (def && typeof def==='object') ? def.name : def;
+      if(v && vName !== defName) {
+        const price = (v && typeof v==='object' && v.price) ? ' (+'+fmt(v.price)+')' : '';
+        opts.push(OPTS[ok].label+': '+vName+price);
+      }
+    }); }
     itemsText += `• ${i.qty}x ${i.name}${opts.length?' ('+opts.join(', ')+')':''} — ${fmt(i.qty*i.price)}\n`;
     if(i.note) itemsText += `   📝 ${i.note}\n`;
   });
   // Build items string cho Sheets
   const itemsStr = items.map(i=>{
     const opts=[];
-    if(i.hasOpts){ Object.keys(OPTS).forEach(function(ok){ if(i[ok] && i[ok]!==OPTS[ok].c[0]) opts.push(OPTS[ok].label+': '+i[ok]); }); }
+    if(i.hasOpts){ Object.keys(OPTS).forEach(function(ok){
+      const v = i[ok];
+      const def = OPTS[ok] ? OPTS[ok].c[0] : null;
+      const vName = (v && typeof v==='object') ? v.name : v;
+      const defName = (def && typeof def==='object') ? def.name : def;
+      if(v && vName !== defName) {
+        const price = (v && typeof v==='object' && v.price) ? ' (+'+fmt(v.price)+')' : '';
+        opts.push(OPTS[ok].label+': '+vName+price);
+      }
+    }); }
     return `${i.qty}x ${i.name}${opts.length?' ('+opts.join(', ')+')':''}`;
   }).join(' | ');
 
@@ -2451,9 +2518,16 @@ function renderOptsEditor() {
       <div style="font-size:0.72rem;color:#999;margin-bottom:5px">Các lựa chọn (kéo để sắp xếp):</div>
       <div id="optChoices${oi}">`;
     opt.choices.forEach(function(c, ci){
+      const cName = (typeof c === 'object') ? c.name : c;
+      const cPrice = (typeof c === 'object' && c.price) ? c.price : 0;
       html += `<div style="display:flex;align-items:center;gap:5px;margin-bottom:5px;">
-          <input value="${esc2(c)}" onchange="optsEditorData[${oi}].choices[${ci}]=this.value"
-            style="flex:1;padding:6px 8px;border:1.5px solid var(--sand);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:0.83rem">
+          <input value="${esc2(cName)}" placeholder="Tên lựa chọn"
+            onchange="optsUpdateChoice(${oi},${ci},'name',this.value)"
+            style="flex:2;padding:6px 8px;border:1.5px solid var(--sand);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:0.83rem">
+          <input type="number" value="${cPrice}" placeholder="Giá thêm" min="0" step="1000"
+            onchange="optsUpdateChoice(${oi},${ci},'price',parseInt(this.value)||0)"
+            style="flex:1;padding:6px 8px;border:1.5px solid var(--sand);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:0.83rem;min-width:80px"
+            title="Giá thêm (0 = miễn phí)">
           <button onclick="optsEditorRemoveChoice(${oi},${ci})"
             style="padding:5px 8px;border:1px solid #ffcccc;border-radius:6px;background:#fff5f5;cursor:pointer;color:#c0392b;font-size:0.75rem">✕</button>
         </div>`;
@@ -2471,8 +2545,28 @@ function renderOptsEditor() {
 function optsEditorAddChoice(oi) {
   const val = prompt('Tên lựa chọn mới:');
   if(!val||!val.trim()) return;
-  optsEditorData[oi].choices.push(val.trim());
+  const priceStr = prompt('Giá thêm (VD: 5000). Để trống nếu miễn phí:', '0');
+  const price = parseInt(priceStr)||0;
+  if(price > 0) {
+    optsEditorData[oi].choices.push({name: val.trim(), price: price});
+  } else {
+    optsEditorData[oi].choices.push(val.trim());
+  }
   renderOptsEditor();
+}
+
+function optsUpdateChoice(oi, ci, field, val) {
+  const c = optsEditorData[oi].choices[ci];
+  if(typeof c === 'object') {
+    c[field] = val;
+  } else {
+    // Convert string to object khi cần lưu thêm thông tin
+    if(field === 'name') {
+      optsEditorData[oi].choices[ci] = val;
+    } else if(field === 'price' && val > 0) {
+      optsEditorData[oi].choices[ci] = {name: c, price: val};
+    }
+  }
 }
 
 function optsEditorRemoveChoice(oi, ci) {
