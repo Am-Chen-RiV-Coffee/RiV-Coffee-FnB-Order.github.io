@@ -568,7 +568,7 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
     <div style="background:#e8f4e8;border-radius:7px;padding:10px 12px;font-size:0.79rem;color:#2d6a2d;font-weight:600;">
       ✅ Đã kết nối: Google Sheets &amp; Email tự động
     </div>
-    <div style="font-size:0.7rem;color:#aaa;margin-top:6px;word-break:break-all;">AKfycbxIiPhNxEmN6-0HS64esnp6HuYJc-mLkkoHSIPcw3FouWkDhFfAWmIvFoEuoQ68JHfJ0Q</div>
+    <div style="font-size:0.7rem;color:#aaa;margin-top:6px;word-break:break-all;">AKfycbzTkyYGI5Cq1Ij_dUoVyKt8Jt3AFC7z8-CeEKTV6u27HYjMIs1XZlGUV_QMibPNs2TJnQ</div>
   </div>
   <div class="admin-section" id="adminMenuSection">
     <h3>🍽️ Bật/Tắt món &amp; Tồn kho</h3>
@@ -1684,7 +1684,7 @@ goPage = function(id, step){
 
 // ── ADMIN SETTINGS ────────────────────────────────────────
 // Lưu vào localStorage (chỉ trên thiết bị này — dành cho chủ quán)
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzTkyYGI5Cq1Ij_dUoVyKt8Jt3AFC7z8-CeEKTV6u27HYjMIs1XZlGUV_QMibPNs2TJnQ/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwxfJR1xpND6ooeOxL11mc58_nUKm2jkeCveiEdijRMp9cnoLqOEyuETlG7L4nqkre9/exec';
 
 let adminSettings = {
   open: '07:00', close: '22:00', manual: 'auto',
@@ -1905,39 +1905,58 @@ function exitAdmin(){
 async function submitToGoogleSheets(orderData){
   const url = APPS_SCRIPT_URL;
 
-  // Tách ảnh biên lai ra (có thể rất lớn) — gửi riêng nếu cần
+  // Tách ảnh ra — nếu > 500KB thì bỏ để tránh timeout
   const proofImage = orderData.proof_image || '';
-  const payload = Object.assign({}, orderData, { proof_image: proofImage ? '[base64_attached]' : '' });
+  const payload = Object.assign({}, orderData, {
+    proof_image: proofImage && proofImage.length < 500000 ? proofImage : ''
+  });
+  const body = JSON.stringify(payload);
 
-  // Cách 1: fetch với mode no-cors + dùng FormData (vượt qua CORS preflight)
-  // Apps Script nhận qua e.postData.contents với FormData không hoạt động
-  // → Dùng cách đáng tin cậy nhất: gửi qua URL params + body dạng text/plain
+  // Thử 1: fetch POST thường (Apps Script trả CORS header khi deploy đúng)
   try {
-    // Gửi toàn bộ data (kể cả ảnh) dưới dạng JSON thuần, wrap trong FormData
-    // Apps Script đọc được e.postData.contents dù no-cors
-    const body = JSON.stringify(orderData);
     const resp = await fetch(url, {
       method:  'POST',
-      mode:    'no-cors',         // bắt buộc để tránh CORS error
-      headers: { 'Content-Type': 'text/plain' }, // text/plain = simple request, không bị preflight
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body:    body
     });
-    console.log('Order submitted (no-cors, text/plain)');
-  } catch(e){
-    console.warn('Apps Script submit error:', e);
-    // Fallback: gửi qua Image beacon (không nhận response nhưng chắc chắn đến)
-    try {
-      const compact = {
-        ref:        orderData.ref,
-        name:       orderData.name,
-        phone:      orderData.phone,
-        address:    orderData.address,
-        total_fmt:  orderData.total_fmt,
-        send_email: true,
-        _fallback:  true
-      };
-      new Image().src = url + '?data=' + encodeURIComponent(JSON.stringify(compact));
-    } catch(e2){}
+    const text = await resp.text();
+    console.log('✅ Order sent:', text);
+    return;
+  } catch(e1) {
+    console.warn('fetch POST thất bại, thử no-cors:', e1.message);
+  }
+
+  // Thử 2: no-cors (luôn "succeed", không đọc được response)
+  try {
+    await fetch(url, {
+      method:  'POST',
+      mode:    'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body:    body
+    });
+    console.log('✅ Order sent (no-cors)');
+    return;
+  } catch(e2) {
+    console.warn('no-cors thất bại:', e2.message);
+  }
+
+  // Thử 3: GET beacon — chắc chắn đến, dù không có ảnh
+  try {
+    const compact = {
+      ref: payload.ref, name: payload.name, phone: payload.phone,
+      address: payload.address, note: payload.note || '',
+      items: payload.items, items_text: payload.items_text,
+      subtotal: payload.subtotal, ship_fee: payload.ship_fee, total: payload.total,
+      ship_km: payload.ship_km, payment: payload.payment,
+      subtotal_fmt: payload.subtotal_fmt, ship_fee_fmt: payload.ship_fee_fmt,
+      total_fmt: payload.total_fmt, order_nd: payload.order_nd,
+      order_time: payload.order_time, timestamp: payload.timestamp,
+      send_email: true, proof_image: ''
+    };
+    new Image().src = url + '?data=' + encodeURIComponent(JSON.stringify(compact));
+    console.log('✅ Order sent (GET fallback)');
+  } catch(e3) {
+    console.warn('GET fallback thất bại:', e3.message);
   }
 }
 
