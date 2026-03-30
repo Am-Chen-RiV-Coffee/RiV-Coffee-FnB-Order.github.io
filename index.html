@@ -760,8 +760,8 @@ const MENU = {
 };
 
 const OPTS = {
-  sugar:{label:"Đường", c:["Không đường","50%","100%"], multi:false, max:1},
-  ice:  {label:"Đá",    c:["Đá chung","Đá riêng","Không đá"], multi:false, max:1}
+  sugar:{label:"Đường", c:[{name:"Không đường",price:0},{name:"50%",price:0},{name:"100%",price:0}], multi:false, max:1},
+  ice:  {label:"Đá",    c:[{name:"Đá chung",price:0},{name:"Đá riêng",price:0},{name:"Không đá",price:0}], multi:false, max:1}
 };
 // Nhóm "Thêm" sẽ được load từ server (multi:true, max:3)
 // OPTS bên trên là fallback khi server chưa phản hồi
@@ -833,17 +833,23 @@ function buildMenu(){
         const labelSuffix = isMulti ? ` <span style="font-size:0.67rem;color:#aaa">(chọn tối đa ${maxSel})</span>` : '';
         optHtml += `<div class="opt-row"><span class="opt-label">${o.label}:${labelSuffix}</span><div class="opt-chips">`;
         o.c.forEach((c, ci) => {
-          const cName = (typeof c === 'object') ? c.name : c;
-          const cPrice = (typeof c === 'object' && c.price > 0) ? ' <span style="font-size:0.65rem">+'+fmt(c.price)+'</span>' : '';
-          let isSelected;
+          // c luôn là {name, price} sau normalize
+          const cName  = (c && typeof c === 'object') ? String(c.name || '') : String(c || '');
+          const cPrice = (c && typeof c === 'object' && c.price > 0)
+            ? ' <span style="font-size:0.65rem;opacity:0.85">+' + fmt(c.price) + '</span>' : '';
+          let isSelected = false;
           if(isMulti) {
-            isSelected = selArr.some(function(s){ return ((typeof s==='object'?s.name:s) === cName); });
+            isSelected = selArr.some(function(s){
+              return ((s && typeof s==='object') ? s.name : String(s||'')) === cName;
+            });
           } else {
-            const selVal = (typeof selSingle === 'object') ? selSingle.name : selSingle;
+            const selVal = (selSingle && typeof selSingle==='object') ? String(selSingle.name||'') : String(selSingle||'');
             isSelected = selVal === cName;
           }
-          const fn = isMulti ? `toggleOpt('${key}','${ok}',${ci},this)` : `setOpt('${key}','${ok}',${ci},this)`;
-          optHtml += `<button class="opt-chip${isSelected?' selected':''}" data-ok="${ok}" data-ci="${ci}" onclick="${fn}">${cName}${cPrice}</button>`;
+          const fn = isMulti
+            ? `toggleOpt('${key}','${ok}',${ci},this)`
+            : `setOpt('${key}','${ok}',${ci},this)`;
+          optHtml += `<button class="opt-chip${isSelected?' selected':''}" onclick="${fn}">${cName}${cPrice}</button>`;
         });
         optHtml += `</div></div>`;
       });
@@ -2542,7 +2548,19 @@ async function reloadMenuFromServer() {
       curCat = Object.keys(MENU)[0];
       if(json.opts && Object.keys(json.opts).length > 0){
         Object.keys(OPTS).forEach(function(k){ delete OPTS[k]; });
-        Object.assign(OPTS, json.opts);
+        // Normalize opts: đảm bảo c là array đúng
+        Object.keys(json.opts).forEach(function(ok){
+          var o = json.opts[ok];
+          OPTS[ok] = {
+            label: o.label || ok,
+            multi: o.multi === true || o.multi === 1,
+            max:   parseInt(o.max) || (o.multi ? 3 : 1),
+            c: (o.c || []).map(function(c){
+              if(typeof c === 'object' && c !== null) return c;
+              return {name: String(c), price: 0};
+            })
+          };
+        });
       }
     }
     // Luôn buildMenu dù thành công hay không
