@@ -2394,17 +2394,27 @@ async function reloadMenuFromServer() {
   try {
     const resp = await fetch(APPS_SCRIPT_URL + '?action=getMenu');
     const json = await resp.json();
+    console.log('🌐 getMenu response:', JSON.stringify(json).substring(0, 300));
     if(json.status==='ok' && json.menu){
-      // Cập nhật MENU và OPTS toàn cục
       Object.keys(MENU).forEach(function(k){ delete MENU[k]; });
       Object.assign(MENU, json.menu);
+      console.log('✅ MENU loaded, cats:', Object.keys(MENU));
       if(json.opts){
         Object.keys(OPTS).forEach(function(k){ delete OPTS[k]; });
         Object.assign(OPTS, json.opts);
+        console.log('✅ OPTS loaded:', Object.keys(OPTS));
+      } else {
+        console.warn('⚠️ json.opts is null/undefined — OPTS không được cập nhật!');
       }
       buildMenu();
+    } else {
+      console.warn('⚠️ getMenu failed:', json);
+      buildMenu(); // dùng menu hardcode
     }
-  } catch(e) {}
+  } catch(e) {
+    console.error('❌ reloadMenuFromServer error:', e.message);
+    buildMenu();
+  }
 }
 
 // ══════════════════════════════════════════════════════════════
