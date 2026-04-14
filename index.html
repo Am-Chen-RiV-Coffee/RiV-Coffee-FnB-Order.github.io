@@ -15,7 +15,7 @@
 <meta name="theme-color" content="#3b1f0e">
 <!-- Open Graph – hiển thị đẹp khi chia sẻ link qua Zalo/Messenger/FB -->
 <meta property="og:title" content="☕ RiV Coffee FnB – Đặt hàng online">
-<meta property="og:description" content="Chọn món, nhập địa chỉ, tính phí ship tự động – nhanh gọn, không cần gọi điện!">
+<meta property="og:description" content="Tiết kiệm hơn">
 <meta property="og:image" content="https://am-chen-riv-coffee.github.io/RiV-Coffee-FnB-Order.github.io/og-image.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -24,7 +24,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://am-chen-riv-coffee.github.io/RiV-Coffee-FnB-Order.github.io/og-image.jpg">
 <meta name="twitter:title" content="☕ RiV Coffee FnB – Đặt hàng online">
-<meta name="twitter:description" content="Chọn món, nhập địa chỉ, tính phí ship tự động">
+<meta name="twitter:description" content="Tiết kiệm hơn">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -342,7 +342,7 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
 
 <!-- PRICE COMPARISON BANNER -->
 <div class="price-banner" id="priceBanner">
-  🏷️ Tiết kiệm 20% so với giá Food App
+  🏷️ Tiết kiệm hơn so với giá Food App 🏷️
 </div>
 
 <!-- CLOSED OVERLAY -->
@@ -415,7 +415,7 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
       <div class="trust-arrow">↓</div>
       <div class="trust-step">
         <div class="trust-icon">2</div>
-        <div class="trust-text"><strong>Quán xác nhận nhận tiền</strong> và phản trước khi giao</div>
+        <div class="trust-text"><strong>Quán xác nhận nhận tiền</strong> và phản hồi trước khi giao</div>
       </div>
       <div class="trust-arrow">↓</div>
       <div class="trust-step">
@@ -710,57 +710,44 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
 <script>
 // ── MENU ──────────────────────────────────────────────────
 const MENU = {
-  "100% Culi": [
-    {n:"Coffee Latte Đác rim",p:42000},{n:"Culi Bạc xỉu",p:28000},{n:"Culi đen",p:21000},{n:"Culi muối Huế",p:30000},
-    {n:"Culi sữa đặc",p:30000},{n:"Culi sữa dừa",p:35000},{n:"Culi sữa kem",p:29000},
-    {n:"Culi sữa kem Caramel",p:46000},{n:"Culi sữa kem Choco",p:42000},
-    {n:"Culi sữa tươi",p:26000},{n:"+ 1 shot Culi Espresso",p:7000,x:1},
-    {n:"+ 1 viên Đá cà phê 4x4cm",p:8000,x:1}
+  "Culi (Robusta Peaberry)": [
+    {n:"Coffee Latte Thốt Nốt",p:39000},{n:"Culi Bạc Sỉu",p:27000},{n:"Culi Đen",p:20000},{n:"Culi Muối",p:29000},
+    {n:"Culi Sữa Đặc",p:28000},{n:"Culi Sữa Dừa",p:32000},{n:"Culi Sữa Kem",p:28000},
+    {n:"Culi Sữa Kem Caramel",p:43000},{n:"Culi Sữa Kem Choco",p:40000},{n:"Culi Sữa Tươi",p:25000},
+    {n:"Chai 250ml Culi Bạc Sỉu",p:46000,x:1},{n:"Chai 250ml Culi Đen",p:48000,x:1},{n:"Chai Culi sữa đặc",p:45000,x:1}
   ],
-  "100% Arabica": [
-    {n:"Americano",p:31000},{n:"Ara bạc xỉu",p:33000},{n:"Ara đen",p:31000},
-    {n:"Ara sữa đặc",p:38000},{n:"Ara sữa kem",p:36000},
-    {n:"Coffee Latte Dalgona",p:35000},{n:"Cold Brew Coffee",p:30000},
-    {n:"+ 1 shot Arabica Espresso",p:10000,x:1}
+  "Arabica (Medium Roast)": [
+    {n:"Americano",p:27000},{n:"Ara Bạc Sỉu",p:27000},{n:"Ara Đen (Đường riêng)",p:27000},
+    {n:"Ara Sữa Đặc",p:32000},{n:"Ara Sữa Kem",p:32000},{n:"Chai 250ml Ara Bạc Sỉu",p:48000,x:1},
+    {n:"Chai 250ml Ara Đen",p:57000,x:1},{n:"Chai 250ml Ara Sữa Đặc",p:55000,x:1},{n:"Coffee Latte",p:32000},
+    {n:"Cold Brew Coffee",p:22000},{n:"Cold Brew Coffee Mango",p:33000},{n:"Cold Brew Coffee Strawberry",p:34000},{n:"Cold Brew Coffee Yuzu",p:34000},
   ],
   "Matcha – Houjicha": [
-    {n:"Houjicha Latte",p:37000},{n:"Matcha Coffee",p:39000},{n:"Matcha Latte",p:37000},
-    {n:"Matcha Lài Uji trân châu",p:42000},{n:"Matcha Sữa Dừa",p:47000},{n:"Matcha Đác rim",p:43000}
+    {n:"Houjicha Latte",p:37000},{n:"Matcha Bí Đỏ",p:38000},{n:"Matcha Coffee",p:39000},{n:"Matcha Latte",p:37000},
+    {n:"Matcha Lài Uji Trân Châu",p:32000},{n:"Matcha Sữa Dừa",p:47000},{n:"Matcha Thốt Nốt",p:48000}
   ],
-  "Trà – Kombucha": [
-    {n:"Kombucha Hibiscus",p:26000},{n:"Kombucha Lài Dâu tằm",p:19000},
-    {n:"Kombucha Lài trái Vải",p:39000},{n:"Kombucha Sen trái Vải",p:39000},
-    {n:"Kombucha Sen Yuzu",p:36000},{n:"Soda dâu tằm",p:29000},
-    {n:"Soda nhiệt đới",p:29000},{n:"Soda Yuzu",p:46000},
-    {n:"Trà Chanh chua",p:14000},{n:"Trà Lài Dâu tằm",p:15000},
-    {n:"Trà Lài trái vải",p:37000},{n:"Trà Tắc nhiệt đới",p:14000},
-    {n:"Trà sữa Truyền thống trân châu",p:38000}
+  "Trà – Soda": [
+    {n:"Hồng Trà Chanh Tươi",p:18000},{n:"Hồng Trà Dâu Tằm",p:18000},{n:"Hồng Trà Dâu Tây",p:16000},
+    {n:"Hồng Trà Sốt Xoài",p:31000},{n:"Hồng Trà Trái Vải",p:29000},{n:"Hồng Trà Yuzu",p:32000},{n:"Soda Dâu Tằm",p:32000},
+    {n:"Soda Chanh",p:32000},{n:"Soda Nhiệt Đới",p:32000},{n:"Soda Yuzu",p:42000},{n:"Soda Dâu Tây",p:30000},{n:"Soda Sốt Xoài",p:41000},
+    {n:"Trà Lài Chanh Tươi",p:18000},{n:"Trà Lài Dâu Tằm",p:18000},{n:"Trà Lài Dâu Tây",p:16000},
+    {n:"Trà Lài Trái Vải",p:34000},{n:"Trà Lài Yuzu",p:32000},{n:"Trà Lài Sốt Xoài",p:31000},{n:"Trà Tắc Nhiệt Đới",p:16000}
   ],
-  "Chai 250–300ml": [
-    {n:"Chai Ara Bạc xỉu",p:50000,x:1},{n:"Chai Ara đen",p:50000,x:1},
-    {n:"Chai Ara sữa đặc",p:50000,x:1},{n:"Chai Ara sữa kem",p:50000,x:1},
-    {n:"Chai Culi Bạc xỉu",p:45000,x:1},{n:"Chai Culi đen",p:45000,x:1},
-    {n:"Chai Culi SK Caramel",p:50000,x:1},{n:"Chai Culi SK Choco",p:50000,x:1},
-    {n:"Chai Culi sữa đặc",p:45000,x:1},{n:"Chai Culi sữa kem",p:45000,x:1},
-    {n:"Chai KBC Hibiscus",p:30000,x:1},{n:"Chai KBC Lài",p:30000,x:1},
-    {n:"Chai KBC Lài Dâu tằm",p:30000,x:1},{n:"Chai KBC Sen",p:30000,x:1},
-    {n:"Chai KBC Sen Yuzu",p:45000,x:1},{n:"Chai Trà sữa Truyền thống (Không trân châu)",p:40000,x:1}
+  "Kombucha - Sữa Chua Kefir": [
+    {n:"Kombucha Hibiscus",p:26000},{n:"Kombucha Lài Dâu Tằm",p:24000},{n:"Kombucha Lài Dâu Tây",p:22000},{n:"Kombucha Lài Trái Vải",p:34000},
+    {n:"Kombucha Sen Trái Vải",p:34000},{n:"Kombucha Sen Yuzu",p:38000},{n:"Sữa Chua Kefir Dâu Tằm",p:26000,x:1},{n:"Sữa Chua Kefir Dâu Tây",p:25000,x:1},
+    {n:"Sữa Chua Kefir Sốt Xoài",p:34000,x:1},{n:"Sữa Chua Kefir Yuzu",p:36000,x:1},{n:"Chai 300ml Sữa Chua Kefir Dâu Tằm",p:36000,x:1},
+    {n:"Chai 300ml Sữa Chua Kefir Dâu Tây",p:34000,x:1},{n:"Chai 300ml Sữa Chua Kefir Sốt Xoài",p:47000,x:1},{n:"Chai 300ml Sữa Chua Kefir Yuzu",p:48000,x:1},
   ],
   "Thêm": [
-    {n:"Phin nhôm màu",p:115000,x:1},{n:"Phin nhôm trắng",p:100000,x:1},
-    {n:"Thêm 1 tẩy đá lớn ly giấy",p:6000,x:1},{n:"Thêm 1 tẩy đá lớn ly nhựa",p:5000,x:1},
-    {n:"Thêm 1 tẩy đá nhỏ ly nhựa",p:4000,x:1},{n:"Thêm 1gr bột Houjicha",p:2000,x:1},
-    {n:"Thêm 1gr bột Matcha Nhật",p:2000,x:1},{n:"Thêm 20gr Dalgona",p:5000,x:1},
-    {n:"Thêm 20ml Caramel",p:6000,x:1},{n:"Thêm 20ml Choco",p:5000,x:1},
-    {n:"Thêm 20ml sữa đặc",p:3000,x:1},{n:"Thêm 20ml sữa kem",p:2000,x:1},
-    {n:"Thêm 25ml Arabica Espresso",p:5000,x:1},{n:"Thêm 25ml Culi Espresso",p:4000,x:1},
-    {n:"Thêm 30ml sữa tươi",p:2000,x:1},{n:"Thêm 50gr đác rim",p:12000,x:1},
-    {n:"Thêm 50gr trân châu",p:6000,x:1}
+    {n:"Phin Nhôm Màu Loại Dày",p:144000,x:1},{n:"Phin Nhôm Trắng Loại Dày",p:125000,x:1},
+    {n:"Thêm 1 Tẩy Đá Ly Giấy",p:7000,x:1},{n:"Thêm 1 Tẩy Đá Ly Nhựa",p:7000,x:1},{n:"Thêm 20gr Đường Đá",p:4000,x:1},
+    {n:"Thêm 50gr Thốt Nốt",p:13000,x:1},{n:"Thêm 50gr Trân Châu Jelly Trắng",p:8000,x:1},{n:"Thêm 50gr Trân Châu Jelly Đen",p:8000,x:1}
   ]
 };
 
 const OPTS = {
-  sugar:{label:"Đường", c:[{name:"Không đường",price:0},{name:"50%",price:0},{name:"100%",price:0}], multi:false, max:1},
+  sugar:{label:"Độ Ngọt", c:[{name:"Bình thường",price:0},{name:"Không đường/Không sữa đặc",price:0},{name:"Ít ngọt",price:0},{name:"Ngọt nhiều",price:0}], multi:false, max:1},
   ice:  {label:"Đá",    c:[{name:"Đá chung",price:0},{name:"Đá riêng",price:0},{name:"Không đá",price:0}], multi:false, max:1}
 };
 // Nhóm "Thêm" sẽ được load từ server (multi:true, max:3)
