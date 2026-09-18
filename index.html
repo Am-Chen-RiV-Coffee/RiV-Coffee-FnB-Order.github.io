@@ -711,63 +711,65 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
 // ── MENU ──────────────────────────────────────────────────
 const MENU = {
   "Liberica (Cà phê Mít)": [
-    {n:"Liberica Cold Brew (Không đường)",p:25000},{n:"Liberica Espresso",p:25000},
-    {n:"Liberica Americano (Không đường)",p:25000}
+    {n:"Liberica Sữa Đặc",p:32000},{n:"Liberica Cold Brew",p:25000},{n:"Liberica Espresso",p:25000},
+    {n:"Liberica Latte",p:32000},{n:"Liberica Americano",p:25000},{n:"Liberica Bạc Sỉu",p:32000}
+  ],
+  "Arabica (Cầu Đất)": [
+    {n:"Ara Sữa Đặc",p:32000},{n:"Ara Sữa Kem",p:32000},{n:"Arabica Espresso",p:25000},
+    {n:"Ara Bạc Sỉu",p:32000},{n:"Chai 250ml Ara Bạc Sỉu",p:45000,x:1},{n:"Arabica Latte",p:32000},
+    {n:"Chai 250ml Ara Sữa Đặc",p:51000,x:1},{n:"Arabica Americano",p:25000},
+    {n:"Chai 250ml Ara Đen",p:51000,x:1},{n:"Cold Brew Coffee Strawberry",p:29000},
+    {n:"Cold Brew Coffee Mango",p:29000},{n:"Cold Brew Coffee Yuzu",p:29000},
+    {n:"Cold Brew Coffee Sốt Vỏ Chanh Vàng",p:23000},{n:"Arabica Cold Brew",p:23000}
   ],
   "Culi (Robusta Peaberry)": [
-    {n:"Cacao",p:25000},
-    {n:"Chai 250ml Culi Bạc Sỉu",p:42000,x:1},{n:"Chai 250ml Culi Đen",p:42000,x:1},{n:"Chai 250ml Culi Sữa Đặc",p:42000,x:1},
-    {n:"Coffee Latte Thốt Nốt",p:36000},{n:"Culi Bạc Sỉu",p:25000},{n:"Culi Đen",p:19000},
-    {n:"Culi Muối (Không Foam Béo)",p:25000},{n:"Culi Sữa Đặc",p:25000},{n:"Culi Sữa Kem",p:25000},
-    {n:"Culi Sữa Kem Caramel",p:38000},{n:"Culi Sữa Kem Choco",p:36000},{n:"Culi Sữa Tươi",p:25000},
-    {n:"Mocha",p:29000}
+    {n:"Culi Muối Không Foam Béo",p:25000},{n:"Culi Sữa Kem Caramel",p:38000},
+    {n:"Culi Sữa Kem Choco",p:36000},{n:"Culi Bạc Sỉu",p:25000},{n:"Coffee Latte Thốt Nốt Rim",p:36000},
+    {n:"Culi Sữa Kem",p:25000},{n:"Culi Sữa Đặc",p:25000},{n:"Chai 250ml Culi Đen",p:42000,x:1},
+    {n:"Culi Sữa Tươi",p:25000},{n:"Chai 250ml Culi Bạc Sỉu",p:42000,x:1},{n:"Mocha",p:29000},
+    {n:"Culi Espresso",p:19000},{n:"Cacao",p:25000},{n:"Chai Culi sữa đặc",p:42000,x:1}
   ],
-  "Arabica (Medium Roast)": [
-    {n:"Americano",p:25000},{n:"Ara Bạc Sỉu",p:25000},{n:"Ara Đen (Đường để riêng)",p:25000},
-    {n:"Ara Sữa Đặc",p:25000},{n:"Ara Sữa Kem",p:25000},
-    {n:"Chai 250ml Ara Bạc xỉu",p:45000,x:1},{n:"Chai 250ml Ara đen",p:51000,x:1},{n:"Chai 250ml Ara sữa đặc",p:51000,x:1},
-    {n:"Coffee Latte",p:32000},{n:"Cold Brew Coffee",p:23000},{n:"Cold Brew Coffee Mango",p:29000},
-    {n:"Cold Brew Coffee Sốt Vỏ Chanh Vàng",p:23000},{n:"Cold Brew Coffee Strawberry",p:29000},{n:"Cold Brew Coffee Yuzu",p:29000}
+  "Matcha-Houjicha": [
+    {n:"Matcha Latte",p:32000},{n:"Matcha Coffee",p:36000},{n:"Matcha Thốt Nốt",p:38000},
+    {n:"Houjicha Latte",p:32000},{n:"Trà Sữa Matcha Uji Jasmine",p:25000},{n:"Matcha Dâu",p:38000},
+    {n:"Matcha Lá Dứa",p:29000}
   ],
-  "Matcha – Houjicha": [
-    {n:"Houjicha Latte",p:32000},{n:"Matcha Coffee",p:36000},{n:"Matcha Dâu",p:38000},
-    {n:"Matcha Lá Dứa",p:29000},{n:"Matcha Lài Uji Trân Châu",p:25000},{n:"Matcha Latte",p:32000},
-    {n:"Matcha Thốt Nốt",p:38000}
-  ],
-  "Trà – Kombucha - Soda": [
-    {n:"Hồng Trà Sốt Vỏ Chanh Vàng",p:19000},{n:"Hồng Trà Sốt Xoài",p:32000},{n:"Hồng Trà Trái Vải",p:32000},{n:"Hồng Trà Yuzu",p:32000},
+  "Trà-Kombucha-Soda": [
     {n:"Kombucha Hibiscus",p:25000},{n:"Kombucha Hibiscus Trái Vải",p:32000},
-    {n:"Soda Nhiệt Đới",p:23000},{n:"Soda Sốt Vỏ Chanh Vàng",p:23000},{n:"Soda Sốt Xoài",p:36000},{n:"Soda Yuzu",p:36000},
-    {n:"Trà Đá Hồng Trà - Nhỏ",p:10000},{n:"Trà Đá Trà Lài - Nhỏ",p:8000},
-    {n:"Trà Đá Hồng Trà - Lớn",p:13000},{n:"Trà Đá Trà Lài - Lớn",p:12000},
+    {n:"Hồng Trà Sốt Vỏ Chanh Vàng",p:19000},{n:"Hồng Trà Sốt Xoài",p:32000},
+    {n:"Hồng Trà Trái Vải",p:32000},{n:"Hồng Trà Yuzu",p:32000},{n:"Soda Nhiệt Đới",p:23000},
+    {n:"Soda Sốt Vỏ Chanh Vàng",p:23000},{n:"Soda Sốt Xoài",p:36000},{n:"Soda Yuzu",p:36000},
+    {n:"Trà đá Hồng trà - Nhỏ",p:10000},{n:"Trà đá Hồng trà - Lớn",p:13000},
+    {n:"Trà đá Trà Lài - Nhỏ",p:8000},{n:"Trà đá Trà Lài - Lớn",p:12000},
     {n:"Trà Lài Sốt Vỏ Chanh Vàng",p:16000},{n:"Trà Lài Sốt Xoài",p:29000},
-    {n:"Trà Lài Trái Vải",p:29000},{n:"Trà Lài Yuzu",p:29000},
-    {n:"Trà Tắc Hồng Trà",p:12000},{n:"Trà Tắc Trà Lài",p:12000}
+    {n:"Trà Lài Trái Vải",p:29000},{n:"Trà Lài Yuzu",p:29000},{n:"Trà Tắc Hồng Trà",p:16000},
+    {n:"Trà Tắc Trà Lài",p:16000}
   ],
   "Thêm": [
-    {n:"Phin Nhôm Trắng Loại Dày",p:140000,x:1},
-    {n:"Thêm 1 tẩy đá Lớn - Ly Giấy",p:7000},{n:"Thêm 1 tẩy đá Nhỏ - Ly PET",p:5000},{n:"Thêm 1 tẩy đá Lớn - Ly PET",p:7000},
-    {n:"Thêm 50gr Thốt Nốt Rim",p:15000,x:1},{n:"Thêm 50gr Trân Châu Jelly Đen",p:5000,x:1},{n:"Thêm 50gr Trân Châu Jelly Trắng",p:5000,x:1}
+    {n:"Phin Nhôm Trắng Loại Dày",p:140000,x:1},{n:"Thêm 1 Tẩy Đá Lớn - Ly Giấy",p:7000,x:1},
+    {n:"Thêm 1 Tẩy Đá Nhỏ - Ly PET",p:5000,x:1},{n:"Thêm 1 Tẩy Đá Lớn - Ly PET",p:7000,x:1},
+    {n:"Thêm 50gr Thốt Nốt Rim",p:15000,x:1},{n:"Thêm 50gr Trân Châu Jelly Trắng",p:5000,x:1},
+    {n:"Thêm 50gr Trân Châu Jelly Đen",p:5000,x:1}
   ]
 };
 
 const OPTS = {
-  sugar:{label:"Độ Ngọt", c:[{name:"Bình thường",price:0},{name:"Không đường/Không sữa đặc",price:0},{name:"Ít ngọt",price:0},{name:"Ngọt nhiều",price:0}], multi:false, max:1},
+  sugar:{label:"Độ Ngọt", c:[{name:"Bình thường",price:0},{name:"Ít ngọt",price:0},{name:"Ngọt nhiều",price:0}], multi:false, max:1},
   ice:  {label:"Đá",    c:[{name:"Đá chung",price:0},{name:"Đá riêng",price:0},{name:"Không đá",price:0}], multi:false, max:1}
 };
 // Nhóm "Thêm" sẽ được load từ server (multi:true, max:3)
 // OPTS bên trên là fallback khi server chưa phản hồi
 
 // ── SHIP RATES (cập nhật theo ảnh mới) ──────────────────
-// Dưới 2.5km: 20k, freeship từ 200k
-// 2.5–5km:    30k, freeship từ 300k
-// 5–8km:      40k, freeship từ 400k
-// Trên 8km:   60k, freeship từ 600k
+// Dưới 3km:15k, freeship từ 200k
+// 3–5km:25k, freeship từ 300k
+// 5–8km:35k, freeship từ 400k
+// Trên 8km:55k, freeship từ 600k
 const SHIP = [
-  {max:2.5, fee:20000, free:200000, lbl:"Dưới 2.5km"},
-  {max:5,   fee:30000, free:300000, lbl:"2.5 – 5km"},
-  {max:8,   fee:40000, free:400000, lbl:"5 – 8km"},
-  {max:9999,fee:60000, free:600000, lbl:"Trên 8km"}
+  {max:3, fee:15000, free:200000, lbl:"Dưới 3km"},
+  {max:5,   fee:25000, free:300000, lbl:"3 – 5km"},
+  {max:8,   fee:35000, free:400000, lbl:"5 – 8km"},
+  {max:9999,fee:55000, free:600000, lbl:"Trên 8km"}
 ];
 const STORE = {lat:10.7717, lng:106.6019}; // 243/27/46/10 Mã Lò, Bình Trị Đông A (Bình Trị Đông), Bình Tân
 
